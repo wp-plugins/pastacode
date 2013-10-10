@@ -4,6 +4,46 @@
  * @author Tim  Shedor
  */
 
+ .code-embed-wrapper{
+  position:relative;
+  padding-top:1.3em;
+  margin-bottom:1em;
+ }
+
+ .code-embed-infos{
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  display: block;
+  background: #FFF;
+  border: 1px solid #358CCB;
+  margin-left: -1px;
+ }
+
+ .code-embed-infos a{
+  color:#358CCB;
+  padding:0 1em;
+  font-family: georgia, serif;
+  font-style:italic;
+  text-decoration:none;
+ }
+
+ .code-embed-infos a:hover,
+ .code-embed-infos a:focus,
+ .code-embed-infos a:active{
+  color:#FFF;
+  background:#358CCB;
+ }
+
+ .code-embed-name{
+  float:left;
+ }
+
+ .code-embed-raw{
+  float:right;
+ }
+
 code[class*="language-"],
 pre[class*="language-"] {
   color: black;
