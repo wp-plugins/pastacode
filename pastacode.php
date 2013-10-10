@@ -210,10 +210,11 @@ function pastacode_plugin_row_meta( $plugin_meta, $plugin_file )
 //Register scripts
 add_action( 'wp_enqueue_scripts', 'pastacode_enqueue_prismjs' );
 function pastacode_enqueue_prismjs() {
+    $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
     wp_register_script( 'prismjs', plugins_url( '/js/prism.js', __FILE__ ), false, PASTACODE_VERSION, true );
-    wp_register_script( 'prism-highlight', plugins_url( '/plugins/line-highlight/prism-line-highlight.min.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
-    wp_register_script( 'prism-linenumber', plugins_url( '/plugins/line-numbers/prism-line-numbers.min.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
-    wp_register_script( 'prism-show-invisible', plugins_url( '/plugins/show-invisibles/prism-show-invisibles.min.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
+    wp_register_script( 'prism-highlight', plugins_url( '/plugins/line-highlight/prism-line-highlight'.$suffix.'.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
+    wp_register_script( 'prism-linenumber', plugins_url( '/plugins/line-numbers/prism-line-numbers'.$suffix.'.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
+    wp_register_script( 'prism-show-invisible', plugins_url( '/plugins/show-invisibles/prism-show-invisibles'.$suffix.'.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
     wp_register_style( 'prismcss', plugins_url( '/css/' . get_option( 'pastacode_style', 'prism' ) . '.css', __FILE__ ), false, PASTACODE_VERSION, 'all' );      
     wp_register_style( 'prism-highlightcss', plugins_url( '/plugins/line-highlight/prism-line-highlight.css', __FILE__ ), false, PASTACODE_VERSION, 'all' );      
     wp_register_style( 'prism-linenumbercss', plugins_url( '/plugins/line-numbers/prism-line-numbers.css', __FILE__ ), false, PASTACODE_VERSION, 'all' );  
@@ -221,10 +222,11 @@ function pastacode_enqueue_prismjs() {
     
 }
 
-add_filter( 'pre_update_option_pastacode_cache_duration', 'pastacode_drop_wge_transients' );
-function pastacode_drop_wge_transients( $param ) {
+add_filter( 'pre_update_option_pastacode_cache_duration', 'pastacode_drop_wge_transients', 10, 3 );
+function pastacode_drop_wge_transients( $param, $newvalue, $oldvalue ) {
     global $wpdb;
-    $wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE '_transient_pastacode_%'" );
+    if( $newvalue!=$oldvalue )
+        $wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE '_transient_pastacode_%'" );
     return $param;
 }
 
