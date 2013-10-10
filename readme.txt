@@ -59,7 +59,7 @@ function my_pastacode_cache_duration( $duration ) {
 Paste these lines into your functions.php theme file :
 `add_filter( 'option_pastacode_style', 'my_pastacode_style' );
 function my_pastacode_style( $scheme ) {
-    $scheme = get_template_directory_uri() . '/my_awesome_style.css'; //scheme uri
+    $scheme = 'my_awesome_style'; //CSS filename into the plugin css directory
     return $scheme;
 }`
 Get inspired of [the default scheme](http://wabeo.fr/pastacode.css) to build your schemes
@@ -69,6 +69,7 @@ Get inspired of [the default scheme](http://wabeo.fr/pastacode.css) to build you
 = 1.0 =
 
 Initial release
+
 * insert codes using a nice lightbox
 * import codes from file, Github, Gist, Pastebin or BitBucket
 * 13 languages available
