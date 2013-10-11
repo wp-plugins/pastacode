@@ -64,6 +64,17 @@ function my_pastacode_style( $scheme ) {
 }`
 Get inspired of [the default scheme](http://wabeo.fr/pastacode.css) to build your schemes
 
+== Screenshots ==
+
+1. View of the Past'a code lightbox
+2. Default prismJS color scheme
+3. *Dark* color scheme
+4. *Coy* color scheme
+5. *Okaidia* color scheme
+6. *Tomorrow* color scheme
+7. *Twilight* color scheme
+8. *Funky* color scheme
+
 == Changelog ==
 
 = 1.0 =
