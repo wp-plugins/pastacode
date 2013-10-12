@@ -77,12 +77,16 @@ Get inspired of [the default scheme](http://wabeo.fr/pastacode.css) to build you
 
 == Changelog ==
 
+= 1.1 =
+* 12 oct 2013
+* Hooks, hooks and hooks.
+* Update shortcode format ("type" became "provider", and and "/" before the closing tag)
+
 = 1.0 =
-
-Initial release
-
-* insert codes using a nice lightbox
-* import codes from file, Github, Gist, Pastebin or BitBucket
+* 10 oct 2013
+* Initial release
+* Insert codes using a nice lightbox
+* Import codes from file, Github, Gist, Pastebin or BitBucket
 * 13 languages available
 * 6 color schemes
-* cache support for webservices (default duration : 1 week)
+* Cache support for webservices (default duration : 1 week)

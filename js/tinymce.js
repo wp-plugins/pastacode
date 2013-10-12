@@ -2,17 +2,14 @@ jQuery(document).ready(function($) {
 	tinymce.create('tinymce.plugins.pcb', {
 		init : function(ed, url) {
 			//Switch Sources
-			$(document).on('change', '#pastacode-service', function( e ){
+			$(document).on('change', '#pastacode-provider', function( e ){
 				var serv = $(this).val();
-				if(['github','gist','bitbucket','pastebin','file','manual'].contains(serv)){
-					$('.pastacode-args').hide().find('input,textarea').val('');
-					$('.pastacode-args.'+serv).show();
-				}
+				$('.pastacode-args').hide().find('input,textarea').val('');
+				$('.pastacode-args.'+serv).show();
 			} );
 			//Insert
 			$(document).on( 'click','#pastacode-insert', function( e ) {
 				e.preventDefault();
-				
 				ed.execCommand(
 					'mceInsertContent',
 					false,
@@ -56,18 +53,10 @@ function pastacode_create_shortcode() {
 		}
 	}
 	
-	shortcode += ']';
 	if( textarea!='')
-		shortcode += '<pre><code>' + pastacode_esc_html( textarea ) + '</code></pre>[/pastacode]';
+		shortcode += ']<pre><code>' + pastacode_esc_html( textarea ) + '</code></pre>[/pastacode]';
+	else
+		shortcode += '/]';
+	
 	return shortcode;
-}
-
-Array.prototype.contains = function(obj) {
-    var i = this.length;
-    while (i--) {
-        if (this[i] === obj) {
-            return true;
-        }
-    }
-    return false;
 }

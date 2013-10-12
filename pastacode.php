@@ -3,33 +3,33 @@
 Plugin Name: Pastacode
 Plugin URI: http://wordpress.org/extend/plugins/pastacode/
 Description: Embed GitHub, Gist, Pastebin, Bitbucket or whatever remote files and even your own code by copy/pasting.
-Version: 1.0
+Version: 1.1
 Author: Willy Bahuaud
 Author URI: http://wabeo.fr
 Contributors, juliobox, willybahuaud
 */
 
-define( 'PASTACODE_VERSION', '1.0' );
+define( 'PASTACODE_VERSION', '1.1' );
 
 add_shortcode( 'pastacode', 'sc_pastacode' );
-function sc_pastacode( $atts, $content ) {
+function sc_pastacode( $atts, $content = "" ) {
 
-    extract( shortcode_atts( array(
-        'type'     => '',
-        'user'     => '',
-        'path'     => '',
-        'repos'    => '',
-        'revision' => 'master',
-        'lines'    => '',
-        'lang'     => 'markup',
-        'highlight' => '',
-        'message'   => '',
+    $atts = shortcode_atts( array(
+        'provider'      => '',
+        'user'          => '',
+        'path_id'       => '',
+        'repos'         => '',
+        'revision'      => 'master',
+        'lines'         => '',
+        'lang'          => 'markup',
+        'highlight'     => '',
+        'message'       => '',
         'linenumbers'   => 'n',
         'showinvisible' => 'n',
-        ), $atts, 'pastacode' ) );
+        ), $atts, 'sc_pastacode' );
 
-    if( empty( $type ) && !empty( $content ) )
-        $type = $content;
+    if( empty( $atts['provider'] ) && !empty( $content ) )
+        $atts['provider'] = md5( $content );
 
     $code_embed_transient = 'pastacode_' . substr( md5( serialize( $atts ) ), 0, 14 );
 
@@ -37,93 +37,11 @@ function sc_pastacode( $atts, $content ) {
 
     if( $time==-1 || !$source = get_transient( $code_embed_transient ) ){
 
-        $source = array();
-
-        switch( $type ){
-
-            case 'github' :
-                if( $user && $repos && $path ) {
-                    $req  = wp_sprintf( 'https://api.github.com/repos/%s/%s/contents/%s', $user, $repos, $path );
-                    $code = wp_remote_get( $req );
-                    if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
-                        $data = json_decode( wp_remote_retrieve_body( $code ) );
-                        $source[ 'name' ] = $data->name;
-                        $source[ 'code' ] = esc_html( base64_decode( $data->content ) );
-                        $source[ 'url' ]  = $data->html_url;
-                        $source[ 'raw' ]  = wp_sprintf( 'https://raw.github.com/%s/%s/%s/%s', $user, $repos, $revision, $path );
-                    }
-                }
-                break;
-
-            case 'gist' :
-                if( $path ) {
-                    $req  = wp_sprintf( 'https://api.github.com/gists/%s', $path );
-                    $code = wp_remote_get( $req );
-                    if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
-                        $data = json_decode( wp_remote_retrieve_body( $code ) );
-                        $source[ 'url' ]  = $data->html_url;
-                        $data = (array)$data->files;
-                        $data = reset($data);
-                        $source[ 'name' ] = $data->filename;
-                        $source[ 'code' ] = esc_html( $data->content );                 
-                        $source[ 'raw' ]  = $data->raw_url;
-                    }
-                }
-                break;
-
-            case 'bitbucket' :
-                if( $user && $repos && $path ) {
-                    $req  = wp_sprintf( 'https://bitbucket.org/api/1.0/repositories/%s/%s/raw/%s/%s', $user, $repos, $revision, $path );
-
-                    $code = wp_remote_get( $req );
-                    if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
-                        $source[ 'name' ] = basename( $path );
-                        $source[ 'code' ] = esc_html( wp_remote_retrieve_body( $code ) );
-                        $source[ 'url' ]  = wp_sprintf( 'https://bitbucket.org/%s/%s/src/%s/%s', $user, $repos, $revision, $path );
-                        $source[ 'raw' ]  = $req;
-                    }
-                }
-                break;
-
-            case 'file' :
-                if( $path ) {
-                    $upload_dir = wp_upload_dir();
-                    $path = str_replace( '../', '', $path );
-                    $req  = esc_url( trailingslashit( $upload_dir[ 'baseurl' ] ) . $path );
-                    $code = wp_remote_get( $req );
-                    if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
-
-                        $source[ 'name' ] = basename( $path );
-                        $source[ 'code' ] = esc_html( wp_remote_retrieve_body( $code ) );
-                        $source[ 'url' ]  = ( $req );
-                    }
-                }
-                break;
-
-            case 'pastebin' :
-                if( $path ) {
-                    $req  = wp_sprintf( 'http://pastebin.com/raw.php?i=%s', $path );
-                    $code = wp_remote_get( $req );
-                    if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
-                        $source[ 'name' ] = $path;
-                        $source[ 'code' ] = esc_html( wp_remote_retrieve_body( $code ) );
-                        $source[ 'url' ]  = wp_sprintf( 'http://pastebin.com/%s', $path );
-                        $source[ 'raw' ]  = wp_sprintf( 'http://pastebin.com/raw.php?i=%s', $path );
-                    }
-                }
-                break;
-            default : 
-                if( !empty( $content ) ){
-                        $source[ 'code' ] = esc_html( str_replace( array('<br>','<br />', '<br/>','</p>'."\n".'<pre><code>','</code></pre>'."\n".'<p>'), array(""), $content ) );
-                }elseif( ! empty( $message ) ){
-                    return '<span class="wabeo_ce_message">' . esc_html( $message ) . '</span>';
-                }
-                break;
-        }
+        $source = apply_filters( 'pastacode_'.$atts['provider'], array(), $atts, $content );
 
         if( ! empty( $source[ 'code' ] ) ) {
             //Wrap lines
-            if( $lines ) {
+            if( $lines = $atts['lines'] ) {
                 $lines = array_map( 'intval', explode( '-', $lines ) );
                 $source[ 'code' ] = implode( "\n", array_slice( preg_split( '/\r\n|\r|\n/', $source[ 'code' ] ), $lines[0] - 1, ( $lines[1] - $lines[0] ) + 1 ) );
             }
@@ -138,19 +56,19 @@ function sc_pastacode( $atts, $content ) {
         wp_enqueue_style( 'prismcss' );
         wp_enqueue_script( 'prismjs' ); 
 
-        $ln = '';
+        $ln_class = '';
         if( 'y' === get_option( 'pastacode_linenumbers', 'n' ) ) {
             wp_enqueue_style( 'prism-linenumbercss' );
             wp_enqueue_script( 'prism-linenumber' );
-            $ln = ' line-numbers';
+            $ln_class = ' line-numbers';
         }
         if( 'y' === get_option( 'pastacode_showinvisible', 'n' ) ) {
             wp_enqueue_style( 'prism-show-invisiblecss' );
             wp_enqueue_script( 'prism-show-invisible' );  
         }
         //highlight
-        if( preg_match( '/([0-9-,]+)/', $highlight ) ) {
-            $highlight_val = ' data-line="' . $highlight . '"';
+        if( preg_match( '/([0-9-,]+)/', $atts['highlight'] ) ) {
+            $highlight_val = ' data-line="' . $atts['highlight'] . '"';
             wp_enqueue_script( 'prism-highlight' );
             wp_enqueue_style( 'prism-highlightcss' );
         } else {
@@ -160,7 +78,7 @@ function sc_pastacode( $atts, $content ) {
         //Wrap
         $output = array();
         $output[] = '<div class="code-embed-wrapper">';
-        $output[] = '<pre class="language-' . sanitize_html_class( $lang ) . ' code-embed-pre' . $ln . '" ' . $highlight_val . '><code class="language-' . sanitize_html_class( $lang ) . ' code-embed-code">'
+        $output[] = '<pre class="language-' . sanitize_html_class( $atts['lang'] ) . ' code-embed-pre' . $ln_class . '" ' . $highlight_val . '><code class="language-' . sanitize_html_class( $atts['lang'] ) . ' code-embed-code">'
         . $source[ 'code' ] .
         '</code></pre>';
         $output[] = '<div class="code-embed-infos">';
@@ -168,34 +86,133 @@ function sc_pastacode( $atts, $content ) {
             $output[] = '<a href="' . esc_url( $source[ 'url' ] ) . '" title="' . sprintf( esc_attr__( 'See %s', 'pastacode' ), $source[ 'name' ] ) . '" target="_blank" class="code-embed-name">' . esc_html( $source[ 'name' ] ) . '</a>';
         if( isset( $source[ 'raw' ] ) )
             $output[] = '<a href="' . esc_url( $source[ 'raw' ] ) . '" title="' . sprintf( esc_attr__( 'Back to %s' ), $source[ 'name' ] ) . '" class="code-embed-raw" target="_blank">' . __( 'view raw', 'pastacode' ) . '</a>';
+        if( ! isset( $source[ 'url' ] ) && ! isset( $source[ 'raw' ] ) && isset( $source[ 'name' ] ) )
+            $output[] = '<span class="code-embed-name">' . $source[ 'name' ] . '</span>';
         $output[] = '</div>';
         $output[] = '</div>';
         $output = implode( "\n", $output );
 
         return $output;
-    } elseif( ! empty( $message ) ) {
-        return '<span class="pastacode_message">' . esc_html( $message ) . '</span>';
+    } elseif( !empty( $atts['message'] ) ) {
+        return '<span class="pastacode_message">' . esc_html( $atts['message'] ) . '</span>';
     }
 }
 
-add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'pastacode_settings_action_links', 10, 2 );
-function pastacode_settings_action_links( $links, $file )
+add_filter( 'pastacode_github', '_pastacode_github', 10, 2 );
+function _pastacode_github( $source, $atts ) {
+    extract( $atts );
+    if( $user && $repos && $path_id ) {
+        $b64dcd = 'b'.'a'.'s'.'e'.'6'.'4'.'_'.'d'.'e'.'c'.'o'.'d'.'e';
+        $req  = wp_sprintf( 'https://api.github.com/repos/%s/%s/contents/%s', $user, $repos, $path_id );
+        $code = wp_remote_get( $req );
+        if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
+            $data = json_decode( wp_remote_retrieve_body( $code ) );
+            $source[ 'name' ] = $data->name;
+            $source[ 'code' ] = esc_html( $b64dcd ( $data->content ) );
+            $source[ 'url' ]  = $data->html_url;
+            $source[ 'raw' ]  = wp_sprintf( 'https://raw.github.com/%s/%s/%s/%s', $user, $repos, $revision, $path_id );
+        }
+    }
+    return $source;
+}
 
-{
+add_filter( 'pastacode_gist', '_pastacode_gist', 10, 2 );
+function _pastacode_gist( $source, $atts ) {
+    extract( $atts );
+    if( $path_id ) {
+        $req  = wp_sprintf( 'https://api.github.com/gists/%s', $path_id );
+        $code = wp_remote_get( $req );
+        if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
+            $data = json_decode( wp_remote_retrieve_body( $code ) );
+            $source[ 'url' ]  = $data->html_url;
+            $data = (array)$data->files;
+            $data = reset($data);
+            $source[ 'name' ] = $data->filename;
+            $source[ 'code' ] = esc_html( $data->content );                 
+            $source[ 'raw' ]  = $data->raw_url;
+        }
+    }
+    return $source;
+}
+
+add_filter( 'pastacode_bitbucket', '_pastacode_bitbucket', 10, 2 );
+function _pastacode_bitbucket( $source, $atts ) {
+    extract( $atts );
+    if( $user && $repos && $path_id ) {
+        $req  = wp_sprintf( 'https://bitbucket.org/api/1.0/repositories/%s/%s/raw/%s/%s', $user, $repos, $revision, $path_id );
+
+        $code = wp_remote_get( $req );
+        if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
+            $source[ 'name' ] = basename( $path_id );
+            $source[ 'code' ] = esc_html( wp_remote_retrieve_body( $code ) );
+            $source[ 'url' ]  = wp_sprintf( 'https://bitbucket.org/%s/%s/src/%s/%s', $user, $repos, $revision, $path_id );
+            $source[ 'raw' ]  = $req;
+        }
+    }
+    return $source;
+}
+
+add_filter( 'pastacode_file', '_pastacode_file', 10, 2 );
+function _pastacode_file( $source, $atts ) {
+    extract( $atts );
+    if( $path_id ) {
+        $upload_dir = wp_upload_dir();
+        $path_id = str_replace( '../', '', $path_id );
+        $req  = esc_url( trailingslashit( $upload_dir[ 'baseurl' ] ) . $path_id );
+        $code = wp_remote_get( $req );
+        if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
+
+            $source[ 'name' ] = basename( $path_id );
+            $source[ 'code' ] = esc_html( wp_remote_retrieve_body( $code ) );
+            $source[ 'url' ]  = ( $req );
+        }
+    }
+    return $source;
+}
+
+add_filter( 'pastacode_pastebin', '_pastacode_pastebin', 10, 2 );
+function _pastacode_pastebin( $source, $atts ) {
+    extract( $atts );
+    if( $path_id ) {
+        $req  = wp_sprintf( 'http://pastebin.com/raw.php?i=%s', $path_id );
+        $code = wp_remote_get( $req );
+        if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
+            $source[ 'name' ] = $path_id;
+            $source[ 'code' ] = esc_html( wp_remote_retrieve_body( $code ) );
+            $source[ 'url' ]  = wp_sprintf( 'http://pastebin.com/%s', $path_id );
+            $source[ 'raw' ]  = wp_sprintf( 'http://pastebin.com/raw.php?i=%s', $path_id );
+        }
+    }
+    return $source;
+}
+
+add_filter( 'pastacode_manual', '_pastacode_manual', 10, 3 );
+function _pastacode_manual( $source, $atts, $content ) {
+    extract( $atts );
+    if( !empty( $content ) ){
+        $source[ 'code' ] = esc_html( str_replace( array('<br>','<br />', '<br/>','</p>'."\n".'<pre><code>','</code></pre>'."\n".'<p>'), array(''), $content ) );
+    }
+    if( isset( $atts[ 'message' ] ) )
+        $source[ 'name' ] = esc_html( $message );
+    return $source;
+}
+
+
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'pastacode_settings_action_links', 10, 2 );
+function pastacode_settings_action_links( $links, $file ) {
     if( current_user_can( 'manage_options' ) )
         array_unshift( $links, '<a href="' . admin_url( 'options-general.php?page=pastacode' ) . '">' . __( 'Settings' ) . '</a>' );
     return $links;
 }
 
 add_filter( 'plugin_row_meta', 'pastacode_plugin_row_meta', 10, 2 );
-function pastacode_plugin_row_meta( $plugin_meta, $plugin_file )
-{
+function pastacode_plugin_row_meta( $plugin_meta, $plugin_file ) {
     if( plugin_basename( __FILE__ ) == $plugin_file ){
         $last = end( $plugin_meta );
         $plugin_meta = array_slice( $plugin_meta, 0, -2 );
         $a = array();
         $authors = array(
-            array(  'name'=>'Willy Bahuaud', 'url'=>'http://www.wabeo.fr' ),
+            array(  'name'=>'Willy Bahuaud', 'url'=>'http://wabeo.fr' ),
             array(  'name'=>'Julio Potier', 'url'=>'http://www.boiteaweb.fr' ),
         );
         foreach( $authors as $author )
@@ -212,9 +229,9 @@ add_action( 'wp_enqueue_scripts', 'pastacode_enqueue_prismjs' );
 function pastacode_enqueue_prismjs() {
     $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
     wp_register_script( 'prismjs', plugins_url( '/js/prism.js', __FILE__ ), false, PASTACODE_VERSION, true );
-    wp_register_script( 'prism-highlight', plugins_url( '/plugins/line-highlight/prism-line-highlight'.$suffix.'.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
-    wp_register_script( 'prism-linenumber', plugins_url( '/plugins/line-numbers/prism-line-numbers'.$suffix.'.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
-    wp_register_script( 'prism-show-invisible', plugins_url( '/plugins/show-invisibles/prism-show-invisibles'.$suffix.'.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
+    wp_register_script( 'prism-highlight', plugins_url( '/plugins/line-highlight/prism-line-highlight' . $suffix . '.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
+    wp_register_script( 'prism-linenumber', plugins_url( '/plugins/line-numbers/prism-line-numbers' . $suffix . '.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
+    wp_register_script( 'prism-show-invisible', plugins_url( '/plugins/show-invisibles/prism-show-invisibles' . $suffix . '.js', __FILE__ ), array( 'prismjs' ), PASTACODE_VERSION, true );
     wp_register_style( 'prismcss', plugins_url( '/css/' . get_option( 'pastacode_style', 'prism' ) . '.css', __FILE__ ), false, PASTACODE_VERSION, 'all' );      
     wp_register_style( 'prism-highlightcss', plugins_url( '/plugins/line-highlight/prism-line-highlight.css', __FILE__ ), false, PASTACODE_VERSION, 'all' );      
     wp_register_style( 'prism-linenumbercss', plugins_url( '/plugins/line-numbers/prism-line-numbers.css', __FILE__ ), false, PASTACODE_VERSION, 'all' );  
@@ -222,8 +239,8 @@ function pastacode_enqueue_prismjs() {
     
 }
 
-add_filter( 'pre_update_option_pastacode_cache_duration', 'pastacode_drop_wge_transients', 10, 3 );
-function pastacode_drop_wge_transients( $param, $newvalue, $oldvalue ) {
+add_filter( 'pre_update_option_pastacode_cache_duration', 'pastacode_drop_transients', 10, 3 );
+function pastacode_drop_transients( $param, $newvalue, $oldvalue ) {
     global $wpdb;
     if( $newvalue!=$oldvalue )
         $wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE '_transient_pastacode_%'" );
@@ -235,7 +252,7 @@ function pastacode_drop_wge_transients( $param, $newvalue, $oldvalue ) {
 */
 add_action( 'admin_menu', 'pastacode_create_menu' );
 function pastacode_create_menu() {
-    add_options_page( 'Pastacode '.__( 'Settings' ), 'Pastacode', 'manage_options', 'pastacode', 'pastacode_settings_page' );
+    add_options_page( 'Pastacode '. __( 'Settings' ), 'Pastacode', 'manage_options', 'pastacode', 'pastacode_settings_page' );
     register_setting( 'pastacode', 'pastacode_cache_duration' );
     register_setting( 'pastacode', 'pastacode_style' );
     register_setting( 'pastacode', 'pastacode_linenumbers' );
@@ -274,12 +291,12 @@ function pastacode_settings_page() {
         'pastacode_setting_section',
         array(
             'options' => array(
-                HOUR_IN_SECONDS     => sprintf( __( '%s hour' ), '1' ),
+                HOUR_IN_SECONDS      => sprintf( __( '%s hour' ), '1' ),
                 HOUR_IN_SECONDS * 12 => __( 'Twice Daily' ),
-                DAY_IN_SECONDS      => __( 'Once Daily' ),
-                DAY_IN_SECONDS * 7     => __( 'Once Weekly', 'pastacode' ),
-                0      => __( 'Never reload', 'pastacode' ),
-                -1      => __( 'No cache (dev mode)', 'pastacode' ),
+                DAY_IN_SECONDS       => __( 'Once Daily' ),
+                DAY_IN_SECONDS * 7   => __( 'Once Weekly', 'pastacode' ),
+                0                    => __( 'Never reload', 'pastacode' ),
+                -1                   => __( 'No cache (dev mode)', 'pastacode' ),
                 ),
             'name' => 'pastacode_cache_duration'
          ) );
@@ -309,8 +326,8 @@ function pastacode_settings_page() {
         'pastacode_setting_section',
         array(
             'options' => array(
-                'y'          => __( 'Yes', 'pastacode' ),
-                'n'     => __( 'No', 'pastacode' ),
+                'y' => __( 'Yes', 'pastacode' ),
+                'n' => __( 'No', 'pastacode' ),
                 ),
             'name' => 'pastacode_linenumbers'
          ) );
@@ -322,8 +339,8 @@ function pastacode_settings_page() {
         'pastacode_setting_section',
         array(
             'options' => array(
-                'y'          => __( 'Yes', 'pastacode' ),
-                'n'     => __( 'No', 'pastacode' ),
+                'y' => __( 'Yes', 'pastacode' ),
+                'n' => __( 'No', 'pastacode' ),
                 ),
             'name' => 'pastacode_showinvisible'
          ) );
@@ -341,8 +358,7 @@ function pastacode_settings_page() {
 }
 
 register_activation_hook( __FILE__, 'pastacode_activation' );
-function pastacode_activation()
-{
+function pastacode_activation() {
         add_option( 'pastacode_cache_duration', DAY_IN_SECONDS * 7 );
         add_option( 'pastacode_style', 'prism' );
         add_option( 'pastacode_showinvisible', 'n' );
@@ -350,8 +366,7 @@ function pastacode_activation()
 }
 
 register_uninstall_hook( __FILE__, 'pastacode_uninstaller' );
-function pastacode_uninstaller()
-{
+function pastacode_uninstaller() {
         delete_option( 'pastacode_cache_duration' );
         delete_option( 'pastacode_style' );
 }
@@ -394,7 +409,14 @@ function wp_ajax_pastacode_box(){
         $href = $wp_styles->base_url . "/wp-admin/load-styles.php?c={$zip}&dir={$dir}&load=media&ver=$ver";
         echo "<link rel='stylesheet' href='" . esc_attr( $href ) . "' type='text/css' media='all' />\n";
     }
-
+    $services = array( 'manual' => __( 'Manual', 'pastacode' ),
+                    'github'    => 'Github',
+                    'gist'      => 'Gist',
+                    'bitbucket' => 'Bitbucket',
+                    'pastebin'  => 'Pastebin',
+                    'file'      => __( 'File from uploads', 'pastacode' ),
+                    );
+    $services = apply_filters( 'pastacode_services', $services );
     ?>
     <h3 class="media-title"><?php _e('Past\'a code', 'pastacode'); ?></h3>
 
@@ -405,22 +427,14 @@ function wp_ajax_pastacode_box(){
                 <table class="describe" style="width:100%;margin-top:1em;"><tbody>
 
                     <tr valign="top" class="field">
-                        <th class="label" scope="row"><label for="pastacode-service"><?php _e('Select a service', 'pastacode'); ?></th>
+                        <th class="label" scope="row"><label for="pastacode-provider"><?php _e('Select a provider', 'pastacode'); ?></th>
                         <td>
-                            <select name="pastacode-type" id="pastacode-service">
+                            <select name="pastacode-provider" id="pastacode-provider">
+                                <optgroup label="<?php _e( 'Select a provider', 'pastacode' ); ?>">
                                 <?php
-                                $types  = array(
-                                    'manual'    => __( 'Manual', 'pastacode' ),
-                                    'github'    => 'Github',
-                                    'gist'      => 'Gist',
-                                    'bitbucket' => 'Bitbucket',
-                                    'pastebin'  => 'Pastebin',
-                                    'file'      => __( 'File', 'pastacode' ),
-                                );
-                                ?><optgroup label="<?php _e( 'Select a provider', 'pastacode' ); ?>">
-                                <?php
-                                foreach( $types as $k => $type )
-                                    echo '<option value="' . $k . '">' . $type . '</value>';
+                                foreach( $services as $k => $service )
+                                    echo '<option value="' . $k . '">' . $service . '</value>';
+                                unset( $k );
                                 ?>
                                 </optgroup>
                             </select>
@@ -431,8 +445,9 @@ function wp_ajax_pastacode_box(){
                         <th class="label" scope="row"><label for="pastacode-lang"><?php _e('Select a syntax', 'pastacode'); ?></th>
                         <td>
                             <select name="pastacode-lang" id="pastacode-lang">
+                                <optgroup label="<?php _e( 'Select a syntax', 'pastacode' ); ?>">
                                 <?php
-                                $types  = array(
+                                $langs  = array(
                                     'markup'       => 'HTML',
                                     'css'          => 'CSS',
                                     'javascript'   => 'JavaScript',
@@ -447,9 +462,12 @@ function wp_ajax_pastacode_box(){
                                     'coffeescript' => 'CoffeeScript',
                                     'bash'         => 'Bash',
                                 );
-                                foreach( $types as $k => $type )
-                                    echo '<option value="' . $k . '">' . $type . '</value>';
-                                    ?>
+                                $langs = apply_filters( 'pastacode_langs', $langs );
+                                foreach( $langs as $k => $lang )
+                                    echo '<option value="' . $k . '">' . $lang . '</value>';
+                                unset( $k );
+                                ?>
+                                </optgroup>
                             </select>
                         </td>
                     </tr>
@@ -468,54 +486,36 @@ function wp_ajax_pastacode_box(){
                         </td>
                     </tr>
 
-                    <tr valign="top" class="field pastacode-args github bitbucket hidden">
-                        <th class="label" scope="row"><label for="pastacode-username"><span class="alignleft"><?php _e('User of repository', 'pastacode'); ?></span></label></th>
-                        <td>
-                            <input type="text" name="pastacode-user" id="pastacode-username" placeholder="<?php _e( 'John Doe', 'pastacode' ); ?>"/>
-                        </td>
-                    </tr>
+                    <?php
+                    $fields = array('username' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('User of repository', 'pastacode'), 'placeholder' => __( 'John Doe', 'pastacode' ), 'name' => 'user' ),
+                                    'repository' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('Repository', 'pastacode'), 'placeholder' => __( 'pastacode', 'pastacode' ), 'name' => 'repos' ),
+                                    'path-id' => array( 'classes' => array( 'gist','pastebin' ), 'label' => __('Code ID', 'pastacode'), 'placeholder' => '123456', 'name' => 'path_id' ),
+                                    'path-repo' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('File path inside the repository', 'pastacode'), 'placeholder' => __( 'bin/foobar.php', 'pastebin' ), 'name' => 'path_id'  ),
+                                    'path-up' => array( 'classes' => array( 'file' ), 'label' => sprintf( __('File path relative to %s', 'pastacode'), esc_html( WP_CONTENT_URL ) ), 'placeholder' => date( 'Y/m' ).'/source.txt', 'name' => 'path_id'  ),
+                                    'revision' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('Revision', 'pastacode'), 'placeholder' => __('master', 'pastacode'), 'name' => 'revision'  ),
+                                    'manual' => array( 'classes' => array( 'manual' ), 'label' => __('Code', 'pastacode'), 'name' => 'manual'  ),
+                                    'message' => array( 'classes' => array( 'manual' ), 'label' => __('Code title', 'pastacode'),'placeholder' => __('title', 'pastacode'), 'name' => 'message'  ),
+                                    );
+                    $fields = apply_filters( 'pastacode_fields', $fields );
 
-                    <tr valign="top" class="field pastacode-args github bitbucket hidden">
-                        <th class="label" scope="row"><label for="pastacode-repository"><span class="alignleft"><?php _e('Repository', 'pastacode'); ?></span></label></th>
+                    foreach ($fields as $name => $field) {
+                        $classes = array_map( 'sanitize_html_class', $field['classes'] );
+                    ?>
+                    <tr valign="top" class="field pastacode-args <?php echo implode( ' ', $classes ); ?> <?php  if( ! in_array( array_shift( array_keys( $services ) ), $classes ) ) echo 'hidden'; ?>" id="<?php echo $name; ?>">
+                        <th class="label" scope="row"><label for="pastacode-<?php echo $name; ?>"><span class="alignleft"><?php echo esc_html( $field['label'] ); ?></span></label></th>
                         <td>
-                            <input type="text" name="pastacode-repos" id="pastacode-repository" placeholder="<?php _e( 'pastacode', 'pastacode' ); ?>"/>
+                            <?php if( isset( $field['placeholder'] ) ) { ?>
+                                <input type="text" name="pastacode-<?php echo $field[ 'name' ]; ?>" id="pastacode-<?php echo $name; ?>" placeholder="<?php echo esc_attr( $field['placeholder'] ); ?>"/>
+                            <?php }else{ ?>
+                                <textarea name="pastacode-<?php echo $field[ 'name' ]; ?>" id="pastacode-<?php echo $name; ?>" rows="5"></textarea>
+                            <?php } ?>
                         </td>
                     </tr>
+                    <? } 
 
-                    <tr valign="top" class="field pastacode-args gist pastebin hidden">
-                        <th class="label" scope="row"><label for="pastacode-path"><span class="alignleft"><?php _e('Code ID', 'pastacode'); ?></span></label></th>
-                        <td>
-                            <input type="text" name="pastacode-path" id="pastacode-path" placeholder="123456"/>
-                        </td>
-                    </tr>
+                    do_action( 'in_pastacode_fields' );
 
-                    <tr valign="top" class="field pastacode-args github bitbucket hidden">
-                        <th class="label" scope="row"><label for="pastacode-path"><span class="alignleft"><?php _e('File path inside the repository', 'pastacode'); ?></span></label></th>
-                        <td>
-                            <input type="text" name="pastacode-path" id="pastacode-path" placeholder="bin/foobar.php"/>
-                        </td>
-                    </tr>
-
-                    <tr valign="top" class="field pastacode-args file hidden">
-                        <th class="label" scope="row"><label for="pastacode-path"><span class="alignleft"><?php printf( __('File path relative to %s', 'pastacode'), esc_html( WP_CONTENT_URL ) ); ?></span></label></th>
-                        <td>
-                            <input type="text" name="pastacode-path" id="pastacode-path" placeholder="<?php echo date( 'Y/m' ) ?>/source.txt"/>
-                        </td>
-                    </tr>
-
-                    <tr valign="top" class="field pastacode-args github bitbucket hidden">
-                        <th class="label" scope="row"><label for="pastacode-revision"><span class="alignleft"><?php _e('Revision', 'pastacode'); ?></span></label></th>
-                        <td>
-                            <input type="text" name="pastacode-revision" id="pastacode-revision" placeholder="<?php _e( 'master', 'pastacode' ); ?>"/>
-                        </td>
-                    </tr>
-
-                    <tr valign="top" class="field pastacode-args manual">
-                        <th class="label" scope="row"><label for="pastacode-highlight"><span class="alignleft"><?php _e('Manual input', 'pastacode'); ?></span></label></th>
-                        <td>
-                            <textarea name="pastacode-manual" id="pastacode-manual"></textarea>
-                        </td>
-                    </tr>
+                    ?>
 
                     <tr valign="top" class="field">
                         <td>
