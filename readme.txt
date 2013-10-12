@@ -89,7 +89,7 @@ function _pastacode_services( $services ) {
     return $services;
 }
 
-//Define pastabox buttton inputs
+//Define pastabox lightbox inputs
 add_action( 'pastacode_fields', '_pastacode_fields' );
 function _pastacode_fields( $fields ) { 
     $fields['wordpress'] = array( 
