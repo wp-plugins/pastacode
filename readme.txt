@@ -80,7 +80,7 @@ Get inspired of [the default scheme](http://wabeo.fr/pastacode.css) to build you
 = 1.1 =
 * 12 oct 2013
 * Hooks, hooks and hooks.
-* Update shortcode format ("type" became "provider", and and "/" before the closing tag)
+* Update shortcode format ("type" became "provider", and add "/" before the closing tag)
 
 = 1.0 =
 * 10 oct 2013
