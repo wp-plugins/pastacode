@@ -3,13 +3,13 @@
 Plugin Name: Pastacode
 Plugin URI: http://wordpress.org/extend/plugins/pastacode/
 Description: Embed GitHub, Gist, Pastebin, Bitbucket or whatever remote files and even your own code by copy/pasting.
-Version: 1.1
+Version: 1.2
 Author: Willy Bahuaud
 Author URI: http://wabeo.fr
 Contributors, juliobox, willybahuaud
 */
 
-define( 'PASTACODE_VERSION', '1.1' );
+define( 'PASTACODE_VERSION', '1.2' );
 
 add_shortcode( 'pastacode', 'sc_pastacode' );
 function sc_pastacode( $atts, $content = "" ) {
@@ -239,12 +239,15 @@ function pastacode_enqueue_prismjs() {
     
 }
 
-add_filter( 'pre_update_option_pastacode_cache_duration', 'pastacode_drop_transients', 10, 3 );
-function pastacode_drop_transients( $param, $newvalue, $oldvalue ) {
-    global $wpdb;
-    if( $newvalue!=$oldvalue )
+add_filter( 'admin_post_pastacode_drop_transients', 'pastacode_drop_transients', 10, 2 );
+function pastacode_drop_transients() {
+    if( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'pastacode_drop_transients' ) ){
+        global $wpdb;
         $wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE '_transient_pastacode_%'" );
-    return $param;
+        wp_redirect( wp_get_referer() );
+    }else{
+        wp_nonce_ays('');
+    }
 }
 
 /**
@@ -350,7 +353,13 @@ function pastacode_settings_page() {
         <?php 
         settings_fields( 'pastacode' );
         do_settings_sections( 'pastacode' );
-        submit_button();
+        $url = wp_nonce_url( admin_url( 'admin-post.php?action=pastacode_drop_transients' ), 'pastacode_drop_transients' );
+        global $wpdb;
+        $transients = $wpdb->get_var( "SELECT count(option_name) FROM $wpdb->options WHERE option_name LIKE '_transient_pastacode_%'" );
+        echo '<p class="submit">';
+            submit_button( '', 'primary large', 'submit', false );
+            echo ' <a href="'.$url.'" class="button button-large button-secondary">'.__( 'Purge cache' ).' ('.(int)$transients.')</a>';
+        echo '</p>';
         ?>
     </form>
 </div>

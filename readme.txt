@@ -92,7 +92,7 @@ function _pastacode_services( $services ) {
 //Define pastabox lightbox inputs
 add_action( 'pastacode_fields', '_pastacode_fields' );
 function _pastacode_fields( $fields ) { 
-    $fields['wordpress'] = array( 
+    $fields['wordpress'] = array(  // 'wordpress' or 'whatever'
         'classes'     => array( 'wordpress' ), // same value as the key
         'label'       => sprintf( __('File path relative to %s', 'pastacode'), 'http://core.svn.wordpress.org/' ), 
         'placeholder' =>'trunk/wp-config-sample.php', //if placeholder isn't defined, it will be a textarea
@@ -102,6 +102,7 @@ function _pastacode_fields( $fields ) {
 }
 
 //Build the function to retrieve the code
+// "pastacode_wordpress" hook name (1st param) = "pastacode_" + "wordpress" or "whatever"
 add_action( 'pastacode_wordpress', '_pastacode_wordpress', 10, 2 );
 function _pastacode_wordpress( $source, $atts ) {
     extract( $atts );
@@ -119,6 +120,8 @@ function _pastacode_wordpress( $source, $atts ) {
     return $source;
 }`
 
+Do not add you root website!! A contributor can add the shortcode to point your "wp-config.php" to read it!!
+
 == Screenshots ==
 
 1. View of the Past'a code lightbox
@@ -131,6 +134,12 @@ function _pastacode_wordpress( $source, $atts ) {
 8. *Funky* color scheme
 
 == Changelog ==
+
+= 1.2 =
+* 15 oct 2013
+* The modification of the cache duration do not purge cache anymore
+* New button "Purge Cache" in option page, use it to delete all transients (they contains the responded source codes)
+* Fix bug when updating option
 
 = 1.1 =
 * 12 oct 2013
