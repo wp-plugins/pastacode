@@ -525,7 +525,7 @@ function wp_ajax_pastacode_box(){
                             <?php } ?>
                         </td>
                     </tr>
-                    <? } 
+                    <?php } 
 
                     do_action( 'in_pastacode_fields' );
 
