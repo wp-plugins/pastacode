@@ -363,7 +363,7 @@ function pastacode_settings_page() {
         $transients = $wpdb->get_var( "SELECT count(option_name) FROM $wpdb->options WHERE option_name LIKE '_transient_pastacode_%'" );
         echo '<p class="submit">';
             submit_button( '', 'primary large', 'submit', false );
-            echo ' <a href="'.$url.'" class="button button-large button-secondary">'.__( 'Purge cache' ).' ('.(int)$transients.')</a>';
+            echo ' <a href="'.$url.'" class="button button-large button-secondary">'.__( 'Purge cache', 'pastacode' ).' ('.(int)$transients.')</a>';
         echo '</p>';
         ?>
     </form>

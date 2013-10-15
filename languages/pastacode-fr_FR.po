@@ -246,3 +246,6 @@ msgstr "Durée du cache"
 # '__return_false',
 msgid "General Settings"
 msgstr "Réglages généraux"
+
+msgid "Purge cache"
+msgstr "Vider le cache"
