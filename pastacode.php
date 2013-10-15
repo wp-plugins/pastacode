@@ -11,6 +11,11 @@ Contributors, juliobox, willybahuaud
 
 define( 'PASTACODE_VERSION', '1.2' );
 
+add_action( 'plugins_loaded', 'pastacode_load_languages' );
+function pastacode_load_languages() {
+  load_plugin_textdomain( 'pastacode', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' ); 
+}
+
 add_shortcode( 'pastacode', 'sc_pastacode' );
 function sc_pastacode( $atts, $content = "" ) {
 
@@ -311,13 +316,13 @@ function pastacode_settings_page() {
         'pastacode_setting_section',
         array(
             'options' => array(
-                'prism'          => __( 'Prism', 'pastacode' ),
-                'prism-dark'     => __( 'Dark', 'pastacode' ),
-                'prism-funky'    => __( 'Funky', 'pastacode' ),
-                'prism-coy'      => __( 'Coy', 'pastacode' ),
-                'prism-okaidia'  => __( 'Okaïdia', 'pastacode' ),
-                'prism-tomorrow' => __( 'Tomorrow', 'pastacode' ),
-                'prism-twilight' => __( 'Twilight', 'pastacode' ),
+                'prism'          => 'Prism',
+                'prism-dark'     => 'Dark',
+                'prism-funky'    => 'Funky',
+                'prism-coy'      => 'Coy',
+                'prism-okaidia'  => 'Okaïdia',
+                'prism-tomorrow' => 'Tomorrow',
+                'prism-twilight' => 'Twilight',
                 ),
             'name' => 'pastacode_style'
          ) );
