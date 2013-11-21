@@ -3,13 +3,13 @@
 Plugin Name: Pastacode
 Plugin URI: http://wordpress.org/extend/plugins/pastacode/
 Description: Embed GitHub, Gist, Pastebin, Bitbucket or whatever remote files and even your own code by copy/pasting.
-Version: 1.2
+Version: 1.2.1
 Author: Willy Bahuaud
 Author URI: http://wabeo.fr
 Contributors, juliobox, willybahuaud
 */
 
-define( 'PASTACODE_VERSION', '1.2' );
+define( 'PASTACODE_VERSION', '1.2.1' );
 
 add_action( 'plugins_loaded', 'pastacode_load_languages' );
 function pastacode_load_languages() {
@@ -39,6 +39,9 @@ function sc_pastacode( $atts, $content = "" ) {
     $code_embed_transient = 'pastacode_' . substr( md5( serialize( $atts ) ), 0, 14 );
 
     $time = get_option( 'pastacode_cache_duration', DAY_IN_SECONDS * 7 );
+
+    if( $atts['provider'] == 'manual' )
+        $time = -1;
 
     if( $time==-1 || !$source = get_transient( $code_embed_transient ) ){
 

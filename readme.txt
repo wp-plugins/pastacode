@@ -135,6 +135,10 @@ Do not add you root website!! A contributor can add the shortcode to point your 
 
 == Changelog ==
 
+= 1.2.1 =
+* 21 nov 2013
+* Fix bug: when manual provider is selected, no cache.
+
 = 1.2 =
 * 15 oct 2013
 * The modification of the cache duration do not purge cache anymore
