@@ -81,6 +81,11 @@ pre[class*="language-"] {
 	border-radius: .3em;
 }
 
+
+code[class*="language-"] {
+	word-wrap:normal;
+}
+
 .token.comment,
 .token.prolog,
 .token.doctype,

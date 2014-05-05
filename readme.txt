@@ -43,6 +43,13 @@ Available programming languages:
 3. Host your snippets on repositories (or localy)
 4. Editing a post, use *Past'a code* button to embed your source code into articles
 
+= Ajax compatibility =
+
+To enable Pastacode on ajax based websites, it need two steps :
+
+1. Paste this line into your functions.php theme file : `add_filter( 'pastacode_ajax', '__return_true' );`
+2. After each change on your DOM, you will have to run this javascript function : `Prism.highlightAll();`
+
 == Frequently Asked Questions ==
 
 = How to setup a custom cache expiration ? =
@@ -134,6 +141,13 @@ Do not add you root website!! A contributor can add the shortcode to point your 
 8. *Funky* color scheme
 
 == Changelog ==
+
+= 1.3 =
+* 5 may 2014
+* TinyMCE Editor support improvment (visual placeholder on editor mode, new tinyMCE button...)
+* Github API restriction fallback (support now more than 30 requests / hour)
+* New ajax compatibility (using hook pastacode_ajax)
+* Fix bug: No more disgracefull linebreaks on code view.
 
 = 1.2.1 =
 * 21 nov 2013

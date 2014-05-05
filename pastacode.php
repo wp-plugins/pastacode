@@ -3,17 +3,17 @@
 Plugin Name: Pastacode
 Plugin URI: http://wordpress.org/extend/plugins/pastacode/
 Description: Embed GitHub, Gist, Pastebin, Bitbucket or whatever remote files and even your own code by copy/pasting.
-Version: 1.2.1
+Version: 1.3
 Author: Willy Bahuaud
 Author URI: http://wabeo.fr
 Contributors, juliobox, willybahuaud
 */
 
-define( 'PASTACODE_VERSION', '1.2.1' );
+define( 'PASTACODE_VERSION', '1.3' );
 
 add_action( 'plugins_loaded', 'pastacode_load_languages' );
 function pastacode_load_languages() {
-  load_plugin_textdomain( 'pastacode', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' ); 
+    load_plugin_textdomain( 'pastacode', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' ); 
 }
 
 add_shortcode( 'pastacode', 'sc_pastacode' );
@@ -33,7 +33,7 @@ function sc_pastacode( $atts, $content = "" ) {
         'showinvisible' => 'n',
         ), $atts, 'sc_pastacode' );
 
-    if( empty( $atts['provider'] ) && !empty( $content ) )
+    if( empty( $atts['provider'] ) && ! empty( $content ) )
         $atts['provider'] = md5( $content );
 
     $code_embed_transient = 'pastacode_' . substr( md5( serialize( $atts ) ), 0, 14 );
@@ -119,6 +119,16 @@ function _pastacode_github( $source, $atts ) {
             $source[ 'code' ] = esc_html( $b64dcd ( $data->content ) );
             $source[ 'url' ]  = $data->html_url;
             $source[ 'raw' ]  = wp_sprintf( 'https://raw.github.com/%s/%s/%s/%s', $user, $repos, $revision, $path_id );
+        } else {
+            $req2 = wp_sprintf( 'https://raw.github.com/%s/%s/%s/%s', $user, $repos, $revision, $path_id );
+            $code = wp_remote_get( $req2 );
+            if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
+                $name = explode( '/', $path_id );
+                $source[ 'name' ] = $name[ count( $name ) - 1 ];
+                $source[ 'code' ] = esc_html( wp_remote_retrieve_body( $code ) );
+                $source[ 'url' ]  = wp_sprintf( 'https://github.com/%s/%s/blob/%s/%s', $user, $repos, $revision, $path_id );
+                $source[ 'raw' ]  = $req2;
+            }
         }
     }
     return $source;
@@ -245,6 +255,22 @@ function pastacode_enqueue_prismjs() {
     wp_register_style( 'prism-linenumbercss', plugins_url( '/plugins/line-numbers/prism-line-numbers.css', __FILE__ ), false, PASTACODE_VERSION, 'all' );  
     wp_register_style( 'prism-show-invisiblecss', plugins_url( '/plugins/show-invisibles/prism-show-invisibles.css', __FILE__ ), false, PASTACODE_VERSION, 'all' );      
     
+    if ( apply_filters( 'pastacode_ajax', false ) ) {       
+        wp_enqueue_script( 'prismjs' );
+        wp_enqueue_style( 'prismcss' );
+        wp_enqueue_style( 'prism-highlightcss' );
+        wp_enqueue_script( 'prism-highlight' );
+
+        if( 'y' === get_option( 'pastacode_linenumbers', 'n' ) ) {
+            wp_enqueue_style( 'prism-linenumbercss' );
+            wp_enqueue_script( 'prism-linenumber' );
+            $ln_class = ' line-numbers';
+        }
+        if( 'y' === get_option( 'pastacode_showinvisible', 'n' ) ) {
+            wp_enqueue_style( 'prism-show-invisiblecss' );
+            wp_enqueue_script( 'prism-show-invisible' );  
+        }
+    } 
 }
 
 add_filter( 'admin_post_pastacode_drop_transients', 'pastacode_drop_transients', 10, 2 );
@@ -415,17 +441,28 @@ function pastacode_script_tiny($plugin_array) {
     return $plugin_array;
 }
 
-add_action( 'wp_ajax_pastacode_shortcode_printer', 'wp_ajax_pastacode_box' );
-function wp_ajax_pastacode_box(){
-    global $wp_styles;
-    if ( !empty($wp_styles->concat) ) {
-        $dir = $wp_styles->text_direction;
-        $ver = md5("$wp_styles->concat_version{$dir}");
+add_action( 'admin_enqueue_scripts', 'pastacode_shortcodes_mce_css' );
+function pastacode_shortcodes_mce_css() {
+    wp_enqueue_style( 'pastacode-shortcode', plugins_url( '/css/pastacode-tinymce.css', __FILE__ ) );
+}
 
-        // Make the href for the style of box
-        $href = $wp_styles->base_url . "/wp-admin/load-styles.php?c={$zip}&dir={$dir}&load=media&ver=$ver";
-        echo "<link rel='stylesheet' href='" . esc_attr( $href ) . "' type='text/css' media='all' />\n";
-    }
+add_action( 'admin_init', 'add_pastacode_styles_to_editor' );
+function add_pastacode_styles_to_editor() {
+    global $editor_styles;
+    $editor_styles[] = plugins_url( '/css/pastacode-tinymce.css', __FILE__ );
+}
+
+add_action( 'before_wp_tiny_mce', 'pastacode_text' );
+function pastacode_text() {
+    // I10n
+    $text = json_encode( array( 
+                    'window-title' => __( 'Past\'a code', 'pastacode' ),
+                    'label-provider' => __( 'Select a provider', 'pastacode' ),
+                    'label-langs' => __( 'Select a syntax', 'pastacode' ),
+                    'image-placeholder' => plugins_url( '/images/pastacode-placeholder.png', __FILE__ )
+                    ) );
+
+    // Services
     $services = array( 'manual' => __( 'Manual', 'pastacode' ),
                     'github'    => 'Github',
                     'gist'      => 'Gist',
@@ -434,116 +471,69 @@ function wp_ajax_pastacode_box(){
                     'file'      => __( 'File from uploads', 'pastacode' ),
                     );
     $services = apply_filters( 'pastacode_services', $services );
-    ?>
-    <h3 class="media-title"><?php _e('Past\'a code', 'pastacode'); ?></h3>
 
-    <form name="pastacode-shortcode-gen" id="pastacode-shortcode-gen">
-        <div id="media-items">
-            <div class="media-item media-blank">
+    // Languages
+    $langs  = array(
+        'markup'       => 'HTML',
+        'css'          => 'CSS',
+        'javascript'   => 'JavaScript',
+        'php'          => 'PHP',
+        'c'            => 'C',
+        'c++'          => 'C++',
+        'java'         => 'Java',
+        'sass'         => 'Sass',
+        'python'       => 'Python',
+        'sql'          => 'SQL',
+        'ruby'         => 'Ruby',
+        'coffeescript' => 'CoffeeScript',
+        'bash'         => 'Bash',
+    );
+    $langs = apply_filters( 'pastacode_langs', $langs );
 
-                <table class="describe" style="width:100%;margin-top:1em;"><tbody>
+    // Other fields
+    $fields = array(
+        'username' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('User of repository', 'pastacode'), 'placeholder' => __( 'John Doe', 'pastacode' ), 'name' => 'user' ),
+        'repository' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('Repository', 'pastacode'), 'placeholder' => __( 'pastacode', 'pastacode' ), 'name' => 'repos' ),
+        'path-id' => array( 'classes' => array( 'gist','pastebin' ), 'label' => __('Code ID', 'pastacode'), 'placeholder' => '123456', 'name' => 'path_id' ),
+        'path-repo' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('File path inside the repository', 'pastacode'), 'placeholder' => __( 'bin/foobar.php', 'pastebin' ), 'name' => 'path_id'  ),
+        'path-up' => array( 'classes' => array( 'file' ), 'label' => sprintf( __('File path relative to %s', 'pastacode'), esc_html( WP_CONTENT_URL ) ), 'placeholder' => date( 'Y/m' ).'/source.txt', 'name' => 'path_id'  ),
+        'revision' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('Revision', 'pastacode'), 'placeholder' => __('master', 'pastacode'), 'name' => 'revision'  ),
+        'manual' => array( 'classes' => array( 'manual' ), 'label' => __('Code', 'pastacode'), 'name' => 'manual'  ),
+        'message' => array( 'classes' => array( 'manual' ), 'label' => __('Code title', 'pastacode'),'placeholder' => __('title', 'pastacode'), 'name' => 'message'  ),
+        'pastacode-highlight' => array( 'classes' => array( 'manual', 'github', 'gist', 'bitbucket', 'pastebin', 'file' ), 'label' => __('Highlited lines', 'pastacode'), 'placeholder' => '1,2,5-6', 'name' => 'highlight' ),
+        'pastacode-lines' => array( 'classes' => array( 'github', 'gist', 'bitbucket', 'pastebin', 'file' ), 'label' => __('Visibles lines', 'pastacode'), 'placeholder' => '1-20', 'name' => 'lines' )
+    );
+    $fields = apply_filters( 'pastacode_fields', $fields );
 
-                    <tr valign="top" class="field">
-                        <th class="label" scope="row"><label for="pastacode-provider"><?php _e('Select a provider', 'pastacode'); ?></th>
-                        <td>
-                            <select name="pastacode-provider" id="pastacode-provider">
-                                <optgroup label="<?php _e( 'Select a provider', 'pastacode' ); ?>">
-                                <?php
-                                foreach( $services as $k => $service )
-                                    echo '<option value="' . $k . '">' . $service . '</value>';
-                                unset( $k );
-                                ?>
-                                </optgroup>
-                            </select>
-                        </td>
-                    </tr>
+    $newFields = array();
+    $newLangs = array();
+    foreach ( $langs as $k => $s ) {
+        $newLangs[] = array( 'text' => $s, 'value' => $k );
+    }
+    $newFields[] = array( 'type' => 'listbox', 'label' => __( 'Select a syntax', 'pastacode' ), 'name' => 'lang', 'values' => $newLangs );
 
-                    <tr valign="top" class="field">
-                        <th class="label" scope="row"><label for="pastacode-lang"><?php _e('Select a syntax', 'pastacode'); ?></th>
-                        <td>
-                            <select name="pastacode-lang" id="pastacode-lang">
-                                <optgroup label="<?php _e( 'Select a syntax', 'pastacode' ); ?>">
-                                <?php
-                                $langs  = array(
-                                    'markup'       => 'HTML',
-                                    'css'          => 'CSS',
-                                    'javascript'   => 'JavaScript',
-                                    'php'          => 'PHP',
-                                    'c'            => 'C',
-                                    'c++'          => 'C++',
-                                    'java'         => 'Java',
-                                    'sass'         => 'Sass',
-                                    'python'       => 'Python',
-                                    'sql'          => 'SQL',
-                                    'ruby'         => 'Ruby',
-                                    'coffeescript' => 'CoffeeScript',
-                                    'bash'         => 'Bash',
-                                );
-                                $langs = apply_filters( 'pastacode_langs', $langs );
-                                foreach( $langs as $k => $lang )
-                                    echo '<option value="' . $k . '">' . $lang . '</value>';
-                                unset( $k );
-                                ?>
-                                </optgroup>
-                            </select>
-                        </td>
-                    </tr>
+    $pvars['providers'] = $services;
 
-                    <tr valign="top" class="field">
-                        <th class="label" scope="row"><label for="pastacode-lines"><span class="alignleft"><?php _e('Visibles lines', 'pastacode'); ?></span></label></th>
-                        <td>
-                            <input type="text" name="pastacode-lines" id="pastacode-lines" placeholder="1-20"/>
-                        </td>
-                    </tr>
+    foreach ( $fields as $k => $f ) {
+        $field = array(
+            'type' => 'textbox',
+            'name' => $f['name'],
+            'label' => $f['label'],
+            'classes' => 'field-to-test field pastacode-args ' . implode( ' ', $f['classes'] )
+            );
+        if ( ! isset( $f['placeholder'] ) ) {
+            $field['multiline'] = true;
+            $field['minWidth'] = 300;
+            $field['minHeight'] = 100;
+        } else {
+            $field['tooltip'] = $f['placeholder'];
+        }
+        $newFields[] = $field;
+    }
 
-                    <tr valign="top" class="field">
-                        <th class="label" scope="row"><label for="pastacode-highlight"><span class="alignleft"><?php _e('Highlited lines', 'pastacode'); ?></span></label></th>
-                        <td>
-                            <input type="text" name="pastacode-highlight" id="pastacode-highlight" placeholder="1,2,5-6"/>
-                        </td>
-                    </tr>
+    $pvars['fields'] = $newFields;
 
-                    <?php
-                    $fields = array('username' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('User of repository', 'pastacode'), 'placeholder' => __( 'John Doe', 'pastacode' ), 'name' => 'user' ),
-                                    'repository' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('Repository', 'pastacode'), 'placeholder' => __( 'pastacode', 'pastacode' ), 'name' => 'repos' ),
-                                    'path-id' => array( 'classes' => array( 'gist','pastebin' ), 'label' => __('Code ID', 'pastacode'), 'placeholder' => '123456', 'name' => 'path_id' ),
-                                    'path-repo' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('File path inside the repository', 'pastacode'), 'placeholder' => __( 'bin/foobar.php', 'pastebin' ), 'name' => 'path_id'  ),
-                                    'path-up' => array( 'classes' => array( 'file' ), 'label' => sprintf( __('File path relative to %s', 'pastacode'), esc_html( WP_CONTENT_URL ) ), 'placeholder' => date( 'Y/m' ).'/source.txt', 'name' => 'path_id'  ),
-                                    'revision' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('Revision', 'pastacode'), 'placeholder' => __('master', 'pastacode'), 'name' => 'revision'  ),
-                                    'manual' => array( 'classes' => array( 'manual' ), 'label' => __('Code', 'pastacode'), 'name' => 'manual'  ),
-                                    'message' => array( 'classes' => array( 'manual' ), 'label' => __('Code title', 'pastacode'),'placeholder' => __('title', 'pastacode'), 'name' => 'message'  ),
-                                    );
-                    $fields = apply_filters( 'pastacode_fields', $fields );
-
-                    foreach ($fields as $name => $field) {
-                        $classes = array_map( 'sanitize_html_class', $field['classes'] );
-                    ?>
-                    <tr valign="top" class="field pastacode-args <?php echo implode( ' ', $classes ); ?> <?php  if( ! in_array( array_shift( array_keys( $services ) ), $classes ) ) echo 'hidden'; ?>" id="<?php echo $name; ?>">
-                        <th class="label" scope="row"><label for="pastacode-<?php echo $name; ?>"><span class="alignleft"><?php echo esc_html( $field['label'] ); ?></span></label></th>
-                        <td>
-                            <?php if( isset( $field['placeholder'] ) ) { ?>
-                                <input type="text" name="pastacode-<?php echo $field[ 'name' ]; ?>" id="pastacode-<?php echo $name; ?>" placeholder="<?php echo esc_attr( $field['placeholder'] ); ?>"/>
-                            <?php }else{ ?>
-                                <textarea name="pastacode-<?php echo $field[ 'name' ]; ?>" id="pastacode-<?php echo $name; ?>" rows="5"></textarea>
-                            <?php } ?>
-                        </td>
-                    </tr>
-                    <?php } 
-
-                    do_action( 'in_pastacode_fields' );
-
-                    ?>
-
-                    <tr valign="top" class="field">
-                        <td>
-                            <p class="current-page"><input name="pastacode-insert" type="submit" class="button-primary" id="pastacode-insert" tabindex="5" accesskey="p" value="<?php _e('Insert shortcode', 'pastacode') ?>"></p>
-                        </td>
-                    </tr>
-
-                </tbody></table>
-            </div>
-        </div>
-
-    </form>
-    <?php die();
+    // Print Vars
+    $pvars = json_encode( $pvars );
+    echo '<script>var pastacodeText = ' . $text . ';var pastacodeVars = ' . $pvars . ';</script>';
 }

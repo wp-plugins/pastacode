@@ -88,6 +88,7 @@ pre[class*="language-"] {
 code[class*="language"] {
   max-height:29em;
   display:block;
+  word-wrap:normal;
   /* overflow:scroll; */
 }
 
