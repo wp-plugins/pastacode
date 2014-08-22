@@ -2,7 +2,7 @@
 Contributors: willybahuaud, juliobox
 Tags: embed, code, version, github, bitbucket, gist, prismjs, code, color highlight, syntaxique coloration
 Requires at least: 3.1
-Tested up to: 3.9
+Tested up to: 4.0
 Stable tag: trunk
 License: GPLv2 or later
 
