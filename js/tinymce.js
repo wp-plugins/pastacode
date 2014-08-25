@@ -177,7 +177,7 @@
 
 	function getShortcodeContent( str ) {
 		var content = new RegExp( "<pre><code>([^<]+)<\/code><\/pre>" ).exec(str);
-		return content ? content[1] : '';
+		return content ? content[1].replace( /&amp;/g, '&').replace(/&lt;/g, '<' ).replace(/&gt;/g, '>').replace(/&#34;/g, '"').replace(/&#039;/g, "'") : '';
 	}
 
 	// Edit shortcode
@@ -210,7 +210,7 @@
 				onsubmit: function( e ) {
 					var out = '';
 					if( e.data['provider'] == 'manual' ) {
-						var manual = e.data.manual;
+						var manual = pastacode_esc_html( e.data.manual );
 						delete e.data.manual
 						out += '[pastacode';
 						for ( var attr in e.data ) {
