@@ -1,9 +1,9 @@
 (function() {
 
-	function fields( provider, pfields, values ) {
+	function fields( provider, pfields, values, editor ) {
 		var fields = [];
 		for ( var k in pfields ) {
-			// Push existing values
+
 			if ( typeof values != 'undefined' && typeof values[k] != 'undefined' ) {
 				pfields[k].value = values[k];
 			}
@@ -17,6 +17,44 @@
 					fields.push( pfields[k] );
 				}
 			}
+			
+			if ( typeof pfields[k]['multiline'] != 'undefined' && pfields[k]['multiline'] == true ) {
+				pfields[k]['onpostRender'] = function() {
+					var thing = this;
+					this.before( {
+						type:'button',
+						text:' ',
+						tooltip:pastacodeVars['extendText'],
+						style:'background:none;-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;margin-left:-10px;background:url(' + pastacodeVars['extendIcon'] + ');width:32px;height:32px;',
+						border:'0',
+						onclick: function() {
+							editor.windowManager.open( {
+								title: pastacodeText['window-title'] + ' - ' + pastacodeText['window-manuel-full'],
+								minHeight:window.innerHeight - 100,
+								minWidth:window.innerWidth - 50,
+								body:[{
+									type:'textbox', 
+									multiline:true, 
+									minHeight:window.innerHeight - 160,
+									name:'newCode',
+									value : thing.value(),
+									onPostRender: function() {
+										var textarea = this.getEl().getAttribute( 'id' );
+										setTimeout( function () {
+											jQuery( document ).ready( function($) {
+												$( '#' + textarea ).css({marginLeft:'30px'}).linenumbers({col_width:'20px'});
+											} );
+										}, 200 );
+									}
+								}],
+								onsubmit:function( e ){
+									thing.value( e.data.newCode );
+								},
+							} );
+						},
+					});
+				};
+			}
 		}
 
 		fields.push( {
@@ -28,11 +66,15 @@
 		return fields;
 	}
 
+	function mycustomfonct(editor){
+		console.log(editor);
+	}
+
 	function theFunction( key, editor, pvars ) {
 		fn = function() {
 			editor.windowManager.open( {
 				title: pastacodeText['window-title'] + ' - ' + pvars[key],
-				body: fields( key, pastacodeVars['fields'] ),
+				body: fields( key, pastacodeVars['fields'], '', editor ),
 				onsubmit: function( e ) {
 					var out = '';
 					if( e.data['provider'] == 'manual' ) {
@@ -52,7 +94,7 @@
 					}
 					editor.insertContent( out );
 				}
-			});
+			} );
 		};
 		return fn;
 	}
@@ -206,7 +248,7 @@
 
 			editor.windowManager.open( {
 				title: pastacodeText['window-title'] + ' - ' + pastacodeVars['providers'][provider],
-				body: fields( provider, pastacodeVars['fields'], values),
+				body: fields( provider, pastacodeVars['fields'], values, editor),
 				onsubmit: function( e ) {
 					var out = '';
 					if( e.data['provider'] == 'manual' ) {

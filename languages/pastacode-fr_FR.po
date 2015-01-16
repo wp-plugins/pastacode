@@ -7,12 +7,13 @@ msgstr ""
 "Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/pastacode\n"
 "POT-Creation-Date: 2013-10-16 07:45:55+00:00\n"
 "PO-Revision-Date: \n"
-"Last-Translator: FxB <fx@fxbenard.com>\n"
+"Last-Translator: \n"
 "Language-Team: \n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.5.7\n"
+"X-Generator: Poedit 1.6.4\n"
 
 # if( isset( $source[ 'url' ] ) )
 # $output[] = '<a href="' . esc_url( $source[ 'url' ] ) . '" title="' . sprintf( esc_attr__( 'See %s', 'pastacode' ), $source[ 'name' ] ) . '" target="_blank" class="code-embed-name">' . esc_html( $source[ 'name' ] ) . '</a>';
@@ -128,6 +129,18 @@ msgstr "Non"
 #: pastacode.php:344
 msgid "Show invisible chars"
 msgstr "Afficher les caractères invisibles"
+
+#: pastacode.php:371
+msgid "Code description location"
+msgstr "Position de la description du code"
+
+#: pastacode.php:377
+msgid "Below code"
+msgstr "En dessous du code"
+
+#: pastacode.php:378
+msgid "Above code"
+msgstr "Au dessus du code"
 
 #: pastacode.php:366
 msgid "Purge cache"
@@ -279,6 +292,14 @@ msgstr "Titre"
 #: pastacode.php:536
 msgid "Insert shortcode"
 msgstr "Insérer le shortcode"
+
+#: pastacode.php:556
+msgid "Expand editor"
+msgstr "Étendre l'éditeur"
+
+#: pastacode.php:557
+msgid "Manual Code Editor"
+msgstr "Édition de code manuel"
 
 #. Plugin Name of the plugin/theme
 msgid "Pastacode"

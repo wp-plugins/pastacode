@@ -88,6 +88,18 @@ msgstr ""
 msgid "Show invisible chars"
 msgstr ""
 
+#: pastacode.php:371
+msgid "Code description location"
+msgstr ""
+
+#: pastacode.php:377
+msgid "Below code"
+msgstr ""
+
+#: pastacode.php:378
+msgid "Above code"
+msgstr ""
+
 #: pastacode.php:366
 msgid "Purge cache"
 msgstr ""
@@ -174,6 +186,14 @@ msgstr ""
 
 #: pastacode.php:536
 msgid "Insert shortcode"
+msgstr ""
+
+#: pastacode.php:556
+msgid "Expand editor"
+msgstr ""
+
+#: pastacode.php:557
+msgid "Manual Code Editor"
 msgstr ""
 
 #. Plugin Name of the plugin/theme

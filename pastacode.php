@@ -3,13 +3,13 @@
 Plugin Name: Pastacode
 Plugin URI: http://wordpress.org/extend/plugins/pastacode/
 Description: Embed GitHub, Gist, Pastebin, Bitbucket or whatever remote files and even your own code by copy/pasting.
-Version: 1.3.1
+Version: 1.4
 Author: Willy Bahuaud
 Author URI: http://wabeo.fr
 Contributors, juliobox, willybahuaud
 */
 
-define( 'PASTACODE_VERSION', '1.3.1' );
+define( 'PASTACODE_VERSION', '1.4' );
 
 add_action( 'plugins_loaded', 'pastacode_load_languages' );
 function pastacode_load_languages() {
@@ -83,21 +83,31 @@ function sc_pastacode( $atts, $content = "" ) {
             $highlight_val = '';
         }
 
+        //Code info
+        $aboutCode = array();
+        $aboutCode[] = '<div class="code-embed-infos">';
+        if( isset( $source[ 'url' ] ) ) {
+            $aboutCode[] = '<a href="' . esc_url( $source[ 'url' ] ) . '" title="' . sprintf( esc_attr__( 'See %s', 'pastacode' ), $source[ 'name' ] ) . '" target="_blank" class="code-embed-name">' . esc_html( $source[ 'name' ] ) . '</a>';
+        }
+        if( isset( $source[ 'raw' ] ) ) {
+            $aboutCode[] = '<a href="' . esc_url( $source[ 'raw' ] ) . '" title="' . sprintf( esc_attr__( 'Back to %s' ), $source[ 'name' ] ) . '" class="code-embed-raw" target="_blank">' . __( 'view raw', 'pastacode' ) . '</a>';
+        }
+        if( ! isset( $source[ 'url' ] ) && ! isset( $source[ 'raw' ] ) && isset( $source[ 'name' ] ) ) {
+            $aboutCode[] = '<span class="code-embed-name">' . $source[ 'name' ] . '</span>';
+        }
+        $aboutCode[] = '</div>';
+
         //Wrap
         $output = array();
         $output[] = '<div class="code-embed-wrapper">';
         $output[] = '<pre class="language-' . sanitize_html_class( $atts['lang'] ) . ' code-embed-pre' . $ln_class . '" ' . $highlight_val . '><code class="language-' . sanitize_html_class( $atts['lang'] ) . ' code-embed-code">'
         . $source[ 'code' ] .
         '</code></pre>';
-        $output[] = '<div class="code-embed-infos">';
-        if( isset( $source[ 'url' ] ) )
-            $output[] = '<a href="' . esc_url( $source[ 'url' ] ) . '" title="' . sprintf( esc_attr__( 'See %s', 'pastacode' ), $source[ 'name' ] ) . '" target="_blank" class="code-embed-name">' . esc_html( $source[ 'name' ] ) . '</a>';
-        if( isset( $source[ 'raw' ] ) )
-            $output[] = '<a href="' . esc_url( $source[ 'raw' ] ) . '" title="' . sprintf( esc_attr__( 'Back to %s' ), $source[ 'name' ] ) . '" class="code-embed-raw" target="_blank">' . __( 'view raw', 'pastacode' ) . '</a>';
-        if( ! isset( $source[ 'url' ] ) && ! isset( $source[ 'raw' ] ) && isset( $source[ 'name' ] ) )
-            $output[] = '<span class="code-embed-name">' . $source[ 'name' ] . '</span>';
         $output[] = '</div>';
-        $output[] = '</div>';
+
+        $pos = ( 'top' == get_option( 'pastacode_aboutcode_pos' ) ) ? 1 : 2;
+        array_splice( $output, $pos, 0, $aboutCode );
+
         $output = implode( "\n", $output );
 
         return $output;
@@ -294,6 +304,7 @@ function pastacode_create_menu() {
     register_setting( 'pastacode', 'pastacode_style' );
     register_setting( 'pastacode', 'pastacode_linenumbers' );
     register_setting( 'pastacode', 'pastacode_showinvisible' );
+    register_setting( 'pastacode', 'pastacode_aboutcode_pos' );
 }
 
 function pastacode_setting_callback_function( $args ) {
@@ -354,6 +365,19 @@ function pastacode_settings_page() {
                 'prism-twilight' => 'Twilight',
                 ),
             'name' => 'pastacode_style'
+         ) );
+
+    add_settings_field( 'pastacode_aboutcode_pos',
+        __( 'Code description location', 'pastacode' ),
+        'pastacode_setting_callback_function',
+        'pastacode',
+        'pastacode_setting_section',
+        array(
+            'options' => array(
+                'bottom' => __( 'Below code', 'pastacode' ),
+                'top'    => __( 'Above code', 'pastacode' ),
+                ),
+            'name' => 'pastacode_aboutcode_pos'
          ) );
 
     add_settings_field( 'pastacode_linenumbers',
@@ -444,6 +468,8 @@ function pastacode_script_tiny($plugin_array) {
 add_action( 'admin_enqueue_scripts', 'pastacode_shortcodes_mce_css' );
 function pastacode_shortcodes_mce_css() {
     wp_enqueue_style( 'pastacode-shortcode', plugins_url( '/css/pastacode-tinymce.css', __FILE__ ) );
+    wp_register_script( 'jquery-linenumbers', plugins_url( '/js/jquery-linenumbers.js', __FILE__ ), array( 'jquery' ) );
+    wp_enqueue_script( 'jquery-linenumbers' );
 }
 
 add_action( 'admin_init', 'add_pastacode_styles_to_editor' );
@@ -487,6 +513,10 @@ function pastacode_text() {
         'ruby'         => 'Ruby',
         'coffeescript' => 'CoffeeScript',
         'bash'         => 'Bash',
+        'apache'       => 'Apache',
+        'less'         => 'Less',
+        'haml'         => 'HAML',
+        'markdown'     => 'Markdown',
     );
     $langs = apply_filters( 'pastacode_langs', $langs );
 
@@ -532,6 +562,9 @@ function pastacode_text() {
     }
 
     $pvars['fields'] = $newFields;
+    $pvars['extendIcon'] = plugins_url( 'images/expand-editor.png', __FILE__ );
+    $pvars['extendText'] = __( 'Expand editor', 'pastacode' );
+    $pvars['window-manuel-full'] = __( 'Manual Code Editor', 'pastacode' );
 
     // Print Vars
     $pvars = json_encode( $pvars );

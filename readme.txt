@@ -2,7 +2,7 @@
 Contributors: willybahuaud, juliobox
 Tags: embed, code, version, github, bitbucket, gist, prismjs, code, color highlight, syntaxique coloration
 Requires at least: 3.1
-Tested up to: 4.0
+Tested up to: 4.1
 Stable tag: trunk
 License: GPLv2 or later
 
@@ -17,7 +17,7 @@ Don't worry about posts updates while upgrading codes!
 
 Pastacode allows to enhance your snippets using PrismJs plugins (highlightning lines, link functions...).
 
-6 different color schemes are included, and you can build yours.
+7 different color schemes are included, and you can build yours.
 
 Available programming languages:
 
@@ -34,6 +34,10 @@ Available programming languages:
 * Ruby
 * CoffeeScript
 * Bash
+* Apache config
+* less
+* haml
+* markdown
 
 
 == Installation ==
@@ -141,6 +145,12 @@ Do not add you root website!! A contributor can add the shortcode to point your 
 8. *Funky* color scheme
 
 == Changelog ==
+
+= 1.4 =
+* 16 january 2015
+* New feature : you can now edit your manual code into a full screen window
+* update prism.js and prism plugins
+* New option for display code description above or below code
 
 = 1.3 =
 * 5 may 2014
