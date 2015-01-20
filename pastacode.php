@@ -1,15 +1,15 @@
 <?php 
 /*
 Plugin Name: Pastacode
-Plugin URI: http://wordpress.org/extend/plugins/pastacode/
+Plugin URI: http://pastacode.wabeo.fr
 Description: Embed GitHub, Gist, Pastebin, Bitbucket or whatever remote files and even your own code by copy/pasting.
-Version: 1.4
+Version: 1.4.1
 Author: Willy Bahuaud
 Author URI: http://wabeo.fr
 Contributors, juliobox, willybahuaud
 */
 
-define( 'PASTACODE_VERSION', '1.4' );
+define( 'PASTACODE_VERSION', '1.4.1' );
 
 add_action( 'plugins_loaded', 'pastacode_load_languages' );
 function pastacode_load_languages() {
@@ -51,6 +51,9 @@ function sc_pastacode( $atts, $content = "" ) {
             //Wrap lines
             if( $lines = $atts['lines'] ) {
                 $lines = array_map( 'intval', explode( '-', $lines ) );
+                if ( ! isset( $lines[1] ) && isset( $lines[0] ) ) {
+                    $lines[1] = $lines[0];
+                }
                 $source[ 'code' ] = implode( "\n", array_slice( preg_split( '/\r\n|\r|\n/', $source[ 'code' ] ), $lines[0] - 1, ( $lines[1] - $lines[0] ) + 1 ) );
             }
             if( $time>-1 )
@@ -505,7 +508,7 @@ function pastacode_text() {
         'javascript'   => 'JavaScript',
         'php'          => 'PHP',
         'c'            => 'C',
-        'c++'          => 'C++',
+        'cpp'          => 'C++',
         'java'         => 'Java',
         'sass'         => 'Sass',
         'python'       => 'Python',
@@ -513,7 +516,7 @@ function pastacode_text() {
         'ruby'         => 'Ruby',
         'coffeescript' => 'CoffeeScript',
         'bash'         => 'Bash',
-        'apache'       => 'Apache',
+        'apacheconf'   => 'Apache',
         'less'         => 'Less',
         'haml'         => 'HAML',
         'markdown'     => 'Markdown',

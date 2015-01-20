@@ -202,8 +202,7 @@ pre[class*="language-"].line-numbers .line-numbers-rows {
 /* Pastacode add */
 .code-embed-wrapper {
 	position: relative;
-	padding-top: 1.3em;
-	margin-bottom: 1em;
+	padding: 1.3em 0;
 }
 .code-embed-infos {
 	position: relative;

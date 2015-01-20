@@ -68,12 +68,13 @@ function my_pastacode_cache_duration( $duration ) {
 = How define a custom color scheme ? =
 
 Paste these lines into your functions.php theme file :
-`add_filter( 'option_pastacode_style', 'my_pastacode_style' );
-function my_pastacode_style( $scheme ) {
-    $scheme = 'my_awesome_style'; //CSS filename into the plugin css directory
-    return $scheme;
+`add_action( 'wp_enqueue_scripts', 'custom_enqueue_script', 11 );
+function custom_enqueue_script() {
+    $urlofmynewscheme = get_stylesheet_directory_uri() . '/prism-okaida-willy.css'; //this is an example
+    wp_deregister_style( 'prismcss' );
+    wp_register_style( 'prismcss', $urlofmynewscheme, false, '1', 'all' );
 }`
-Get inspired of [the default scheme](http://wabeo.fr/pastacode.css) to build your schemes
+Get inspired of [the default scheme](https://raw.githubusercontent.com/willybahuaud/pastacode-samples/master/default-style.css) to build your schemes
 
 = How to filter supported languages ? =
 
@@ -145,6 +146,12 @@ Do not add you root website!! A contributor can add the shortcode to point your 
 8. *Funky* color scheme
 
 == Changelog ==
+
+= 1.4.1 =
+* 20 january 2015
+* Color Scheme optimisation (line number compatibility, space above and below…)
+* You can select to [display only 1 line of code](https://wordpress.org/support/topic/unique-line-number?replies=1)
+* New [website for documentation](http://pastacode.wabeo.fr) !
 
 = 1.4 =
 * 16 january 2015

@@ -152,7 +152,7 @@ pre[data-line] {
 	border-top: 1px dashed hsl(0, 0%, 33%); /* #545454 */
 	left: 0;
 	line-height: inherit;
-	margin-top: 0.75em; /* Same as .prism’s padding-top */
+	/*margin-top: 0.75em; /* Same as .prism’s padding-top */
 	padding: inherit 0;
 	pointer-events: none;
 	position: absolute;
@@ -186,8 +186,7 @@ pre[data-line] {
 /* Pastacode add */
 .code-embed-wrapper {
 	position: relative;
-	padding-top: 1.25em;
-	margin-bottom: 1em;
+	padding: 1.25em 0;
 }
 .code-embed-infos {
 	position: relative;
@@ -216,4 +215,16 @@ pre + .code-embed-infos span {
 .code-embed-infos a:active {
 	color: #FFF;
 	background: #93A259;
+}
+
+/* Plugin styles:Line Numbers */
+pre[class*="language-"].line-numbers {
+	padding-left: 0;
+}
+pre[class*="language-"].line-numbers code {
+	padding-left: 3.8em;
+	display:block;
+}
+pre[class*="language-"].line-numbers .line-numbers-rows {
+	left: 0;
 }

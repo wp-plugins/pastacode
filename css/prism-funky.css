@@ -104,8 +104,7 @@ code[class*="language-"] {
 /* Pastacode add */
 .code-embed-wrapper {
 	position: relative;
-	padding-bottom: 1.25em;
-	margin-bottom: 1em;
+	padding: 1.25em 0;
 }
 .code-embed-infos {
 	position: relative;
@@ -133,4 +132,16 @@ pre + .code-embed-infos {
 .code-embed-infos a:focus,
 .code-embed-infos a:active {
 	background: black;
+}
+
+/* Plugin styles:Line Numbers */
+pre[class*="language-"].line-numbers {
+	padding-left: 0;
+}
+pre[class*="language-"].line-numbers code {
+	padding-left: 3.8em;
+	display:block;
+}
+pre[class*="language-"].line-numbers .line-numbers-rows {
+	left: 0;
 }
