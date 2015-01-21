@@ -1,0 +1,159 @@
+/**
+ * prism.js default theme for JavaScript, CSS and HTML
+ * Based on dabblet (http://dabblet.com)
+ * @author Lea Verou
+ */
+
+ .code-embed-wrapper{
+ 	position:relative;
+ 	padding-bottom:1.5em;
+ 	margin-bottom:1em;
+ }
+
+ .code-embed-infos{
+ 	position:absolute;
+ 	left:0;
+ 	bottom:0;
+ 	width:100%;
+ 	display:block;
+ 	background:#D8D8D8;
+ }
+
+ .code-embed-infos a{
+ 	color:#41455A;
+ 	padding:0 1em;
+ 	font-family: arial, helvetica, sans-serif;
+ 	text-decoration:none;
+ 	border-bottom:1px solid #d8d8d8;
+ }
+
+ .code-embed-infos a:hover,
+ .code-embed-infos a:focus,
+ .code-embed-infos a:active{
+ 	color:#28406C;
+ 	border-bottom:1px solid #28406C;
+ }
+
+ .code-embed-name{
+ 	float:left;
+ }
+
+ .code-embed-raw{
+ 	float:right;
+ }
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: black;
+	text-shadow: 0 1px white;
+	font-family: Consolas, Monaco, 'Andale Mono', monospace;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	line-height:1.5em;
+	
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+	
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;	
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #f5f2f0;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+}
+
+
+code[class*="language-"] {
+	word-wrap:normal;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: slategray;
+}
+
+.token.punctuation {
+	color: #999;
+}
+
+.namespace {
+	opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number {
+	color: #905;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string {
+	color: #690;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+	color: #a67f59;
+	background: hsla(0,0%,100%,.5);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword,
+.token.function,
+.token.constant  {
+	color: #07a;
+}
+
+.token.deliminator {
+	font-weight:bold;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+	color: #e90;
+}
+
+.token.important {
+	font-weight: bold;
+}
+
+.token.entity {
+	cursor: help;
+}
+
+.token.deliminator {
+	font-weight:bold;
+}
+
+.line-numbers .line-highlight {
+	margin: 0;
+	margin-left: -2.8em;
+}
