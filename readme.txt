@@ -147,6 +147,11 @@ Do not add you root website!! A contributor can add the shortcode to point your 
 
 == Changelog ==
 
+= 1.4.2 =
+* 21 january 2015
+* can target a specific file inside a gist
+* remove prismJS plugin demo file (index.html, inside the plugin rep)
+
 = 1.4.1 =
 * 20 january 2015
 * Color Scheme optimisation (line number compatibility, space above and below…)

@@ -293,6 +293,13 @@ msgstr "Titre"
 msgid "Insert shortcode"
 msgstr "Insérer le shortcode"
 
+# 'path-id' => array( 'classes' => array( 'gist','pastebin' ), 'label' => __('Code ID', 'pastacode'), 'placeholder' => '123456', 'name' => 'path_id' ),
+# 'path-repo' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('File path inside the repository', 'pastacode'), 'placeholder' => __( 'bin/foobar.php', 'pastebin' ), 'name' => 'path_id'  ),
+# 'path-up' => array( 'classes' => array( 'file' ), 'label' => sprintf( __('File path relative to %s', 'pastacode'), esc_html( WP_CONTENT_URL ) ), 'placeholder' => date( 'Y/m' ).'/source.txt', 'name' => 'path_id'  ),
+#: pastacode.php:541
+msgid "File inside the gist"
+msgstr "Fichier du gist"
+
 #: pastacode.php:556
 msgid "Expand editor"
 msgstr "Étendre l'éditeur"

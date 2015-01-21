@@ -3,7 +3,7 @@
 Plugin Name: Pastacode
 Plugin URI: http://pastacode.wabeo.fr
 Description: Embed GitHub, Gist, Pastebin, Bitbucket or whatever remote files and even your own code by copy/pasting.
-Version: 1.4.1
+Version: 1.4.2
 Author: Willy Bahuaud
 Author URI: http://wabeo.fr
 Contributors, juliobox, willybahuaud
@@ -29,6 +29,7 @@ function sc_pastacode( $atts, $content = "" ) {
         'lang'          => 'markup',
         'highlight'     => '',
         'message'       => '',
+        'file'       => '',
         'linenumbers'   => 'n',
         'showinvisible' => 'n',
         ), $atts, 'sc_pastacode' );
@@ -156,8 +157,12 @@ function _pastacode_gist( $source, $atts ) {
         if( ! is_wp_error( $code ) && 200 == wp_remote_retrieve_response_code( $code ) ) {
             $data = json_decode( wp_remote_retrieve_body( $code ) );
             $source[ 'url' ]  = $data->html_url;
-            $data = (array)$data->files;
-            $data = reset($data);
+            if ( $file && isset( $data->files->$file) ) {
+                $data = $data->files->$file;
+            } else {
+                $data = (array)$data->files;
+                $data = reset($data);
+            }
             $source[ 'name' ] = $data->filename;
             $source[ 'code' ] = esc_html( $data->content );                 
             $source[ 'raw' ]  = $data->raw_url;
@@ -533,6 +538,7 @@ function pastacode_text() {
         'revision' => array( 'classes' => array( 'github','bitbucket' ), 'label' => __('Revision', 'pastacode'), 'placeholder' => __('master', 'pastacode'), 'name' => 'revision'  ),
         'manual' => array( 'classes' => array( 'manual' ), 'label' => __('Code', 'pastacode'), 'name' => 'manual'  ),
         'message' => array( 'classes' => array( 'manual' ), 'label' => __('Code title', 'pastacode'),'placeholder' => __('title', 'pastacode'), 'name' => 'message'  ),
+        'file' => array( 'classes' => array( 'gist' ), 'label' => __('File inside the gist', 'pastacode'), 'placeholder' => 'foobar.txt', 'name' => 'file'  ),
         'pastacode-highlight' => array( 'classes' => array( 'manual', 'github', 'gist', 'bitbucket', 'pastebin', 'file' ), 'label' => __('Highlited lines', 'pastacode'), 'placeholder' => '1,2,5-6', 'name' => 'highlight' ),
         'pastacode-lines' => array( 'classes' => array( 'github', 'gist', 'bitbucket', 'pastebin', 'file' ), 'label' => __('Visibles lines', 'pastacode'), 'placeholder' => '1-20', 'name' => 'lines' )
     );

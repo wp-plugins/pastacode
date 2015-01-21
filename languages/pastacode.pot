@@ -188,6 +188,10 @@ msgstr ""
 msgid "Insert shortcode"
 msgstr ""
 
+#: pastacode.php:541
+msgid "File inside the gist"
+msgstr ""
+
 #: pastacode.php:556
 msgid "Expand editor"
 msgstr ""
