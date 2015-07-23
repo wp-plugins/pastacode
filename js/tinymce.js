@@ -6,6 +6,8 @@
 
 			if ( typeof values != 'undefined' && typeof values[k] != 'undefined' ) {
 				pfields[k].value = values[k];
+			} else {
+				pfields[k].value = '';
 			}
 
 			if ( typeof pfields[k]['classes'] != 'undefined' ) {
@@ -195,7 +197,7 @@
 			titre += ' (' + l + ')';
 		data = window.encodeURIComponent( data );
 		return '<div style="background-image:url(' + pastacodeText['image-placeholder'] + ');" ' + styleDiv + ' class="pasta-item wp-media mceItem ' + cls + '" ' +
-			'data-wp-pastacode="' + data + '" data-mce-resize="false" data-mce-placeholder="1" ><button class="dashicons dashicons-edit edit">x</button><button class="dashicons dashicons-no-alt remove">x</button><span class="pastacode-shortcode-title">' + titre + '</span></div>';
+			'data-wp-pastacode="' + data + '" data-mce-resize="false" data-mce-placeholder="1" ><button class="dashicons dashicons-edit edit">x</button><button class="dashicons dashicons-no-alt remove">x</button><span class="pastacode-shortcode-title">' + titre + '</span></div><p></p>';
 	}
 
 	// Restore shortcode

@@ -2,7 +2,7 @@
 Contributors: willybahuaud, juliobox
 Tags: embed, code, version, github, bitbucket, gist, prismjs, code, color highlight, syntaxique coloration
 Requires at least: 3.1
-Tested up to: 4.1
+Tested up to: 4.2.3
 Stable tag: trunk
 License: GPLv2 or later
 
@@ -146,6 +146,11 @@ Do not add you root website!! A contributor can add the shortcode to point your 
 8. *Funky* color scheme
 
 == Changelog ==
+
+= 1.5 =
+* 18 june 2015
+* API views implementation. 
+* fix bug when creating new shortcodes (persistent values)
 
 = 1.4.2 =
 * 21 january 2015

@@ -3,13 +3,13 @@
 Plugin Name: Pastacode
 Plugin URI: http://pastacode.wabeo.fr
 Description: Embed GitHub, Gist, Pastebin, Bitbucket or whatever remote files and even your own code by copy/pasting.
-Version: 1.4.2
+Version: 1.5
 Author: Willy Bahuaud
 Author URI: http://wabeo.fr
 Contributors, juliobox, willybahuaud
 */
 
-define( 'PASTACODE_VERSION', '1.4.1' );
+define( 'PASTACODE_VERSION', '1.5' );
 
 add_action( 'plugins_loaded', 'pastacode_load_languages' );
 function pastacode_load_languages() {
@@ -468,8 +468,13 @@ function pastacode_register_button($buttons) {
     return $buttons;
 }
 
-function pastacode_script_tiny($plugin_array) {
-    $plugin_array['pcb'] = plugins_url( '/js/tinymce.js?v=' . PASTACODE_VERSION, __FILE__ );
+function pastacode_script_tiny( $plugin_array ) {
+    global $wp_version;
+    if ( version_compare( $wp_version, '4.2.3', '>=' ) ) {
+        $plugin_array['pcb'] = plugins_url( '/js/tinymce2.js?v=' . PASTACODE_VERSION, __FILE__ );
+    } else {
+        $plugin_array['pcb'] = plugins_url( '/js/tinymce.js?v=' . PASTACODE_VERSION, __FILE__ );
+    }
     return $plugin_array;
 }
 
@@ -483,7 +488,7 @@ function pastacode_shortcodes_mce_css() {
 add_action( 'admin_init', 'add_pastacode_styles_to_editor' );
 function add_pastacode_styles_to_editor() {
     global $editor_styles;
-    $editor_styles[] = plugins_url( '/css/pastacode-tinymce.css', __FILE__ );
+    $editor_styles[] = plugins_url( '/css/pastacode-tinymce.css?v=' . PASTACODE_VERSION, __FILE__ );
 }
 
 add_action( 'before_wp_tiny_mce', 'pastacode_text' );

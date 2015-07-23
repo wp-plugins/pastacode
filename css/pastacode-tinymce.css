@@ -65,3 +65,19 @@ i.mce-i-pcb-icon {
 	-ms-user-select: none;
 	user-select: none;
 }
+
+.pastacode-view{
+	padding:1em;
+	text-align:center;
+	border:1px solid #dedede;
+}
+
+.pastacode-view p{
+	margin-bottom:0;
+}
+
+.pastacode-view strong{
+	padding-left:26px;
+	background:url('../images/pastacode_logo.png') no-repeat top left;
+}
+
