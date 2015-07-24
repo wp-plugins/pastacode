@@ -3,13 +3,13 @@
 Plugin Name: Pastacode
 Plugin URI: http://pastacode.wabeo.fr
 Description: Embed GitHub, Gist, Pastebin, Bitbucket or whatever remote files and even your own code by copy/pasting.
-Version: 1.5
+Version: 1.5.1
 Author: Willy Bahuaud
 Author URI: http://wabeo.fr
 Contributors, juliobox, willybahuaud
 */
 
-define( 'PASTACODE_VERSION', '1.5' );
+define( 'PASTACODE_VERSION', '1.5.1' );
 
 add_action( 'plugins_loaded', 'pastacode_load_languages' );
 function pastacode_load_languages() {
@@ -226,7 +226,16 @@ add_filter( 'pastacode_manual', '_pastacode_manual', 10, 3 );
 function _pastacode_manual( $source, $atts, $content ) {
     extract( $atts );
     if( !empty( $content ) ){
-        $source[ 'code' ] = esc_html( str_replace( array('<br>','<br />', '<br/>','</p>'."\n".'<pre><code>','</code></pre>'."\n".'<p>'), array(''), $content ) );
+        $source[ 'code' ] = esc_html( str_replace( array(
+                                     '<br>', 
+                                     '<br />', 
+                                     '<br/>', 
+                                     '</p>'."\n".'<pre><code>', 
+                                     '</code></pre>'."\n".'<p>', 
+                                     "\n" . '<pre><code>', 
+                                     '</code></pre>' . "\n", 
+                                     '<pre><code>', 
+                                     '</code></pre>'), array(''), $content ) );
     }
     if( isset( $atts[ 'message' ] ) )
         $source[ 'name' ] = esc_html( $message );

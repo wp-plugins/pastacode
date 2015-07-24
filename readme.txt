@@ -147,8 +147,12 @@ Do not add you root website!! A contributor can add the shortcode to point your 
 
 == Changelog ==
 
+= 1.5.1 =
+* 24 july 2015
+* fix bug of code wrapper not removed (support)[https://wordpress.org/support/topic/not-removed]
+
 = 1.5 =
-* 18 june 2015
+* 23 july 2015
 * API views implementation. 
 * fix bug when creating new shortcodes (persistent values)
 
