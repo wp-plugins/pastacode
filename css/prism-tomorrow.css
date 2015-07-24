@@ -1,0 +1,152 @@
+/**
+* prism.js tomorrow night eighties for JavaScript,CoffeeScript,CSS and HTML
+* Based on https://github.com/chriskempson/tomorrow-theme
+* @author Rose Pritchard
+*/
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #ccc;
+	font-family: Consolas, Monaco, 'Andale Mono', monospace;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: 0;
+	overflow: auto;
+}
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #2d2d2d;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+}
+.token.comment,
+.token.block-comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #999;
+}
+.token.punctuation {
+	color: #ccc;
+}
+.token.tag,
+.token.attr-name,
+.token.namespace,
+.token.deleted {
+	color: #e2777a;
+}
+.token.function-name {
+	color: #6196cc;
+}
+.token.boolean,
+.token.number,
+.token.function {
+	color: #f08d49;
+}
+.token.property,
+.token.class-name,
+.token.constant,
+.token.symbol {
+	color: #f8c555;
+}
+.token.selector,
+.token.important,
+.token.atrule,
+.token.keyword,
+.token.builtin {
+	color: #cc99cd;
+}
+.token.string,
+.token.char,
+.token.attr-value,
+.token.regex,
+.token.variable {
+	color: #7ec699;
+}
+.token.operator,
+.token.entity,
+.token.url {
+	color: #67cdcc;
+}
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+.token.entity {
+	cursor: help;
+}
+.token.inserted {
+	color: green;
+}
+
+/* Pastacode add */
+.code-embed-wrapper {
+	position: relative;
+	padding: 1.5em 0;
+}
+.code-embed-infos {
+	position: relative;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	display: block;
+	text-align: center;
+	border-top: 4px solid #2D2D2D;
+}
+pre + .code-embed-infos {
+	border-bottom: 4px solid #2D2D2D;
+	border-top: 0;
+}
+.code-embed-infos a,
+.code-embed-infos span {
+	color: #414141;
+	padding: 0 1em;
+	font-family: Consolas, Monaco, 'Andale Mono', monospace;
+	text-decoration: none;
+	/* border-bottom: 4px solid #45473A;
+	*/
+	margin: 0 0.5em;
+	display: inline-block;
+}
+.code-embed-infos a:hover,
+.code-embed-infos a:focus,
+.code-embed-infos a:active {
+	color: #2D2D2D;
+	background: #7EC699;
+}
+
+/* Plugin styles:Line Numbers */
+pre[class*="language-"].line-numbers {
+	padding-left: 0;
+}
+pre[class*="language-"].line-numbers code {
+	padding-left: 3.8em;
+	display:block;
+}
+pre[class*="language-"].line-numbers .line-numbers-rows {
+	left: 0;
+}

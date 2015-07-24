@@ -1,0 +1,83 @@
+i.mce-i-pcb-icon {
+    background-image: url('../images/pastacode_logo.png');
+}
+
+.pasta-item{
+	display:block;
+	width:100%;
+	height:80px;
+	position:relative;
+	background-color:#e4e4e4;
+	background-position:center 8px;
+	background-repeat:no-repeat;
+	border:1px solid #e4e4e4;
+	margin-bottom:1em;
+	cursor:pointer;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+.pasta-item .dashicons{
+	display:none;
+}
+
+.wp-pastacode-selected{
+	background-color:#eee;
+}
+
+.wp-pastacode-selected .dashicons{
+	display:block;
+	color:#FFF;
+	background:#000;
+	float:left;
+	border:none;
+	width:2em;
+	height:2em;
+	text-align:center;
+	line-height:1.85em;
+	margin:0.25em 0 0 0.25em;
+	cursor:pointer;
+	z-index:2;
+}
+
+.wp-pastacode-selected .dashicons:hover{
+	background:#44A5DD;
+}
+
+.pastacode-shortcode-title{
+	display: block;
+	clear: both;
+	text-align: center;
+	font: bold 1.152em courier;
+	position: absolute;
+	width: 50%;
+	left:25%;
+	top: 40px;
+	z-index:1;
+	color:#676767;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.pastacode-view{
+	padding:1em;
+	text-align:center;
+	border:1px solid #dedede;
+}
+
+.pastacode-view p{
+	margin-bottom:0;
+}
+
+.pastacode-view strong{
+	padding-left:26px;
+	background:url('../images/pastacode_logo.png') no-repeat top left;
+}
+
