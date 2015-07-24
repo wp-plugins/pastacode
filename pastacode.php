@@ -221,7 +221,16 @@ add_filter( 'pastacode_manual', '_pastacode_manual', 10, 3 );
 function _pastacode_manual( $source, $atts, $content ) {
     extract( $atts );
     if( !empty( $content ) ){
-        $source[ 'code' ] = esc_html( str_replace( array('<br>','<br />', '<br/>','</p>'."\n".'<pre><code>','</code></pre>'."\n".'<p>'), array(''), $content ) );
+        $source[ 'code' ] = esc_html( str_replace( array( 
+                                     '<br>', 
+                                     '<br />', 
+                                     '<br/>', 
+                                     '</p>'."\n".'<pre><code>', 
+                                     '</code></pre>'."\n".'<p>', 
+                                     "\n" . '<pre><code>', 
+                                     '</code></pre>' . "\n", 
+                                     '<pre><code>', 
+                                     '</code></pre>' ), array(''), $content ) );
     }
     if( isset( $atts[ 'message' ] ) )
         $source[ 'name' ] = esc_html( $message );
